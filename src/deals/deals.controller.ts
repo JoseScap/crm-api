@@ -1,11 +1,11 @@
-import { Controller, Post, Body, Headers, Query, Req } from '@nestjs/common';
+import { Controller, Post, Get, Body, Headers, Query, Req, Param } from '@nestjs/common';
 import { DealsService } from './deals.service';
 
 @Controller('deals')
 export class DealsController {
   constructor(private readonly dealsService: DealsService) {}
 
-  @Post('webhook/whatsapp')
+  @Post('whatsapp/webhook')
   async webhook(
     @Body() body: any,
     @Headers() headers: any,
@@ -20,6 +20,11 @@ export class DealsController {
       request.url,
       request.path,
     );
+  }
+
+  @Get('whatsapp/conversation/:conversationId')
+  async getConversation(@Param('conversationId') conversationId: string) {
+    return this.dealsService.getConversation(conversationId);
   }
 }
 

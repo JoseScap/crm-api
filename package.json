@@ -22,6 +22,7 @@
     "types:generate": "npx supabase gen types typescript --project-id clxyybtxnoaokdmlzmay > src/supabase/supabase.schema.ts"
   },
   "dependencies": {
+    "@kapso/whatsapp-cloud-api": "^0.1.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",

@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
+import { WhatsappService } from '../whatsapp/whatsapp.service';
 import { TablesInsert } from '../supabase/supabase.schema';
 
 @Injectable()
 export class DealsService {
   private readonly logger = new Logger(DealsService.name);
 
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    private readonly whatsappService: WhatsappService,
+  ) {}
 
   async handleWebhook(body: any, headers: any, query: any, method: string, url: string, path: string) {
     console.log('=== WEBHOOK RECEIVED ===');
@@ -154,6 +158,31 @@ export class DealsService {
         message: 'Unexpected error processing webhook',
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  async getConversation(conversationId: string) {
+    try {
+      this.logger.log(`Fetching conversation: ${conversationId}`);
+      
+      const whatsappClient = this.whatsappService.getClient();
+      
+      // Get conversation using Kapso WhatsApp client
+      const conversation = await whatsappClient.conversations.get({ conversationId });
+      
+      this.logger.log(`Conversation retrieved successfully: ${conversationId}`);
+      
+      return {
+        status: 'success',
+        data: conversation,
+      };
+    } catch (error) {
+      this.logger.error(`Error fetching conversation: ${conversationId}`, error);
+      return {
+        status: 'error',
+        message: 'Failed to fetch conversation',
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
