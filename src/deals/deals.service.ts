@@ -168,7 +168,7 @@ export class DealsService {
   async getChatMessages(
     phoneNumberId: string,
     options?: {
-      phoneNumber?: string;
+      conversationId?: string;
       limit?: number;
       before?: string;
       after?: string;
@@ -176,7 +176,7 @@ export class DealsService {
   ) {
     try {
       const limit = options?.limit || 20;
-      const logMessage = `Fetching messages for phone_number_id: ${phoneNumberId}${options?.phoneNumber ? `, filtered by phone_number: ${options.phoneNumber}` : ''}, limit: ${limit}`;
+      const logMessage = `Fetching messages for phone_number_id: ${phoneNumberId}${options?.conversationId ? `, filtered by whatsapp_conversation_id: ${options.conversationId}` : ''}, limit: ${limit}`;
       this.logger.log(logMessage);
       
       // Get messages using Kapso WhatsApp API

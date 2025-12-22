@@ -34,7 +34,7 @@ export class WhatsappService {
   async getMessages(
     phoneNumberId: string,
     options?: {
-      phoneNumber?: string;
+      conversationId?: string;
       limit?: number;
       before?: string;
       after?: string;
@@ -42,8 +42,8 @@ export class WhatsappService {
   ) {
     const params = new URLSearchParams();
     
-    if (options?.phoneNumber) {
-      params.append('phone_number', options.phoneNumber);
+    if (options?.conversationId) {
+      params.append('conversation_id', options.conversationId);
     }
     
     if (options?.limit !== undefined) {
