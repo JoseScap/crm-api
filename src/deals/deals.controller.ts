@@ -58,5 +58,18 @@ export class DealsController {
 
     return this.dealsService.getChatMessages(phoneNumberId, options);
   }
+
+  @Post('whatsapp/messages/:phoneNumberId')
+  async sendMessage(
+    @Param('phoneNumberId') phoneNumberId: string,
+    @Body() body: { to: string; text: string; preview_url?: boolean },
+  ) {
+    return this.dealsService.sendMessage(
+      phoneNumberId,
+      body.to,
+      body.text,
+      body.preview_url,
+    );
+  }
 }
 

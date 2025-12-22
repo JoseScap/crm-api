@@ -198,5 +198,39 @@ export class DealsService {
       };
     }
   }
+
+  async sendMessage(
+    phoneNumberId: string,
+    to: string,
+    text: string,
+    previewUrl?: boolean,
+  ) {
+    try {
+      this.logger.log(`Sending message to ${to} from phone_number_id: ${phoneNumberId}`);
+      
+      const response = await this.whatsappService.sendMessage(
+        phoneNumberId,
+        to,
+        {
+          body: text,
+          preview_url: previewUrl,
+        },
+      );
+      
+      this.logger.log(`Message sent successfully to ${to}`);
+      
+      return {
+        status: 'success',
+        data: response,
+      };
+    } catch (error) {
+      this.logger.error(`Error sending message to ${to}`, error);
+      return {
+        status: 'error',
+        message: 'Failed to send message',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
 }
 

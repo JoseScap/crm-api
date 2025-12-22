@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
+import { WHATSAPP_MESSAGING_PRODUCT } from './whatsapp.constants';
+import { MessageType, RecipientType, SendMessagePayload, TextMessageContent } from './whatsapp.types';
+import { validateMessageType, validateRecipientType } from './whatsapp.helpers';
 
 @Injectable()
 export class WhatsappService {
@@ -62,6 +65,38 @@ export class WhatsappService {
     const url = `/v24.0/${phoneNumberId}/messages${queryString ? `?${queryString}` : ''}`;
     
     const response = await this.axiosInstance.get(url);
+    return response.data;
+  }
+
+  async sendMessage(
+    phoneNumberId: string,
+    to: string,
+    text: TextMessageContent,
+    recipientType: RecipientType = RecipientType.INDIVIDUAL,
+    type: MessageType = MessageType.TEXT,
+  ) {
+    // Validate that only supported types are used
+    validateMessageType(type);
+    validateRecipientType(recipientType);
+
+    const payload: SendMessagePayload = {
+      messaging_product: WHATSAPP_MESSAGING_PRODUCT,
+      recipient_type: recipientType,
+      to,
+      type,
+      text,
+    };
+
+    const response = await this.axiosInstance.post(
+      `/v24.0/${phoneNumberId}/messages`,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+
     return response.data;
   }
 }
