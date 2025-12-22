@@ -25,6 +25,7 @@ export type Database = {
           phone_number: string | null
           pipeline_stage_id: string | null
           value: number
+          whatsapp_conversation_id: string | null
         }
         Insert: {
           closed_at?: string | null
@@ -36,6 +37,7 @@ export type Database = {
           phone_number?: string | null
           pipeline_stage_id?: string | null
           value: number
+          whatsapp_conversation_id?: string | null
         }
         Update: {
           closed_at?: string | null
@@ -47,6 +49,7 @@ export type Database = {
           phone_number?: string | null
           pipeline_stage_id?: string | null
           value?: number
+          whatsapp_conversation_id?: string | null
         }
         Relationships: [
           {

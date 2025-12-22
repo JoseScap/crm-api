@@ -33,6 +33,7 @@ export class DealsService {
       const customerName = conversation?.contact_name || 'Unknown';
       const phoneNumber = conversation?.phone_number || null;
       const email = conversation?.email || null;
+      const whatsappConversationId = conversation?.id || null;
 
       if (!phoneNumberId) {
         this.logger.warn('Missing phone_number_id in webhook body');
@@ -124,6 +125,7 @@ export class DealsService {
         email: email,
         pipeline_stage_id: stage.id,
         value: 0,
+        whatsapp_conversation_id: whatsappConversationId,
       };
 
       this.logger.log('Inserting deal...', dealData);
