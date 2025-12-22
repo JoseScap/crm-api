@@ -25,17 +25,25 @@ export class DealsController {
   @Get('whatsapp/messages/:conversationId')
   async getChatMessages(
     @Param('phoneNumberId') phoneNumberId: string,
-    @Query('conversationId') conversationId?: string,
-    @Query('limit') limit?: string,
+    @Query('phoneNumber') phoneNumber: string,
+    @Query('conversationId') conversationId: string,
+    @Query('limit') limit: string,
     @Query('before') before?: string,
     @Query('after') after?: string,
   ) {
     const options: {
-      conversationId?: string;
-      limit?: number;
+      phoneNumber: string;
+      conversationId: string;
+      limit: number;
       before?: string;
       after?: string;
-    } = {};
+    } = {
+      phoneNumber: phoneNumber,
+      conversationId: conversationId,
+      limit: parseInt(limit, 10),
+      before: before,
+      after: after,
+    };
 
     if (conversationId) {
       options.conversationId = conversationId;

@@ -33,32 +33,25 @@ export class WhatsappService {
 
   async getMessages(
     phoneNumberId: string,
-    options?: {
-      conversationId?: string;
-      limit?: number;
+    options: {
+      phoneNumber: string;
+      conversationId: string;
+      limit: number;
       before?: string;
       after?: string;
     },
   ) {
     const params = new URLSearchParams();
     
-    if (options?.conversationId) {
-      params.append('conversation_id', options.conversationId);
-    }
+    params.append('conversation_id', options.conversationId);
+    params.append('phone_number', options.phoneNumber);
+    params.append('limit', options.limit.toString());
     
-    if (options?.limit !== undefined) {
-      // Validate limit range: 1 <= x <= 100
-      const limit = Math.max(1, Math.min(100, options.limit));
-      params.append('limit', limit.toString());
-    } else {
-      params.append('limit', '20');
-    }
-    
-    if (options?.before) {
+    if (options.before) {
       params.append('before', options.before);
     }
-    
-    if (options?.after) {
+
+    if (options.after) {
       params.append('after', options.after);
     }
     
