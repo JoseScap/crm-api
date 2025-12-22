@@ -109,7 +109,8 @@ export type Database = {
           id: string
           name: string
           whatsapp_is_enabled: boolean
-          whatsapp_number: string
+          whatsapp_number: string | null
+          whatsapp_phone_number_id: string | null
         }
         Insert: {
           created_at?: string
@@ -117,7 +118,8 @@ export type Database = {
           id?: string
           name?: string
           whatsapp_is_enabled?: boolean
-          whatsapp_number?: string
+          whatsapp_number?: string | null
+          whatsapp_phone_number_id?: string | null
         }
         Update: {
           created_at?: string
@@ -125,7 +127,8 @@ export type Database = {
           id?: string
           name?: string
           whatsapp_is_enabled?: boolean
-          whatsapp_number?: string
+          whatsapp_number?: string | null
+          whatsapp_phone_number_id?: string | null
         }
         Relationships: []
       }

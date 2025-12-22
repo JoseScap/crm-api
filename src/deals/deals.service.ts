@@ -52,6 +52,7 @@ export class DealsService {
         .from('pipelines')
         .select('id')
         .eq('whatsapp_is_enabled', true)
+        .eq('whatsapp_phone_number_id', phoneNumberId)
         .single();
 
       if (pipelineError || !pipeline) {
@@ -164,28 +165,35 @@ export class DealsService {
     }
   }
 
-  async getConversation(conversationId: string) {
+  async getChatMessages(
+    phoneNumberId: string,
+    options?: {
+      phoneNumber?: string;
+      limit?: number;
+      before?: string;
+      after?: string;
+    },
+  ) {
     try {
-      this.logger.log(`Fetching conversation: ${conversationId}`);
+      const limit = options?.limit || 20;
+      const logMessage = `Fetching messages for phone_number_id: ${phoneNumberId}${options?.phoneNumber ? `, filtered by phone_number: ${options.phoneNumber}` : ''}, limit: ${limit}`;
+      this.logger.log(logMessage);
       
-      const whatsappClient = this.whatsappService.getClient();
-
-      this.logger.log('Getting conversation...', conversationId);
+      // Get messages using Kapso WhatsApp API
+      const response = await this.whatsappService.getMessages(phoneNumberId, options);
       
-      // Get conversation using Kapso WhatsApp client
-      const conversation = await whatsappClient.conversations.get({ conversationId });
-      
-      this.logger.log(`Conversation retrieved successfully: ${conversationId}`);
+      this.logger.log(`Messages retrieved successfully for phone_number_id: ${phoneNumberId}`);
       
       return {
         status: 'success',
-        data: conversation,
+        data: response.data || [],
+        paging: response.paging || null,
       };
     } catch (error) {
-      this.logger.error(`Error fetching conversation: ${conversationId}`, error);
+      this.logger.error(`Error fetching messages for phone_number_id: ${phoneNumberId}`, error);
       return {
         status: 'error',
-        message: 'Failed to fetch conversation',
+        message: 'Failed to fetch messages',
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }

@@ -22,9 +22,41 @@ export class DealsController {
     );
   }
 
-  @Get('whatsapp/conversation/:conversationId')
-  async getConversation(@Param('conversationId') conversationId: string) {
-    return this.dealsService.getConversation(conversationId);
+  @Get('whatsapp/messages/:phoneNumberId')
+  async getChatMessages(
+    @Param('phoneNumberId') phoneNumberId: string,
+    @Query('phone_number') phoneNumber?: string,
+    @Query('limit') limit?: string,
+    @Query('before') before?: string,
+    @Query('after') after?: string,
+  ) {
+    const options: {
+      phoneNumber?: string;
+      limit?: number;
+      before?: string;
+      after?: string;
+    } = {};
+
+    if (phoneNumber) {
+      options.phoneNumber = phoneNumber;
+    }
+
+    if (limit) {
+      const limitNumber = parseInt(limit, 10);
+      if (!isNaN(limitNumber) && limitNumber >= 1 && limitNumber <= 100) {
+        options.limit = limitNumber;
+      }
+    }
+
+    if (before) {
+      options.before = before;
+    }
+
+    if (after) {
+      options.after = after;
+    }
+
+    return this.dealsService.getChatMessages(phoneNumberId, options);
   }
 }
 
