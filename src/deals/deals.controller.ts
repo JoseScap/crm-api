@@ -5,7 +5,7 @@ import { DealsService } from './deals.service';
 export class DealsController {
   constructor(private readonly dealsService: DealsService) {}
 
-  @Post('webhook')
+  @Post('webhook/whatsapp')
   webhook(
     @Body() body: any,
     @Headers() headers: any,

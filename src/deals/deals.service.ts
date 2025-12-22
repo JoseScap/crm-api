@@ -8,9 +8,9 @@ export class DealsService {
     console.log('Method:', method);
     console.log('URL:', url);
     console.log('Path:', path);
-    console.log('Query Params:', JSON.stringify(query, null, 2));
-    console.log('Headers:', JSON.stringify(headers, null, 2));
-    console.log('Body:', JSON.stringify(body, null, 2));
+    console.log('Query Params:', JSON.stringify(query));
+    console.log('Headers:', JSON.stringify(headers));
+    console.log('Body:', JSON.stringify(body));
     console.log('Raw Body:', body);
     console.log('=== END WEBHOOK DATA ===');
     
