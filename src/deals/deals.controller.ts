@@ -5,7 +5,7 @@ import { DealsService } from './deals.service';
 export class DealsController {
   constructor(private readonly dealsService: DealsService) {}
 
-  @Post('whatsapp/webhook')
+  @Post('whatsapp/webhook/message-received')
   async webhook(
     @Body() body: any,
     @Headers() headers: any,

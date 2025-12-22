@@ -169,6 +169,8 @@ export class DealsService {
       this.logger.log(`Fetching conversation: ${conversationId}`);
       
       const whatsappClient = this.whatsappService.getClient();
+
+      this.logger.log('Getting conversation...', conversationId);
       
       // Get conversation using Kapso WhatsApp client
       const conversation = await whatsappClient.conversations.get({ conversationId });
