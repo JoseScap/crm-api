@@ -22,11 +22,11 @@ export class DealsController {
     );
   }
 
-  @Get('whatsapp/messages/:conversationId')
+  @Get('whatsapp/messages/:phoneNumberId')
   async getChatMessages(
     @Param('phoneNumberId') phoneNumberId: string,
-    @Query('phoneNumber') phoneNumber: string,
-    @Query('conversationId') conversationId: string,
+    @Query('phone_number') phoneNumber: string,
+    @Query('conversation_id') conversationId: string,
     @Query('limit') limit: string,
     @Query('before') before?: string,
     @Query('after') after?: string,
