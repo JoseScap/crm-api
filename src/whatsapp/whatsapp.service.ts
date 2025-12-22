@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 import { WHATSAPP_MESSAGING_PRODUCT } from './whatsapp.constants';
@@ -7,6 +7,7 @@ import { validateMessageType, validateRecipientType } from './whatsapp.helpers';
 
 @Injectable()
 export class WhatsappService {
+  private readonly logger = new Logger(WhatsappService.name);
   private readonly baseUrl: string;
   private readonly apiKey: string;
   private readonly axiosInstance: AxiosInstance;
@@ -63,6 +64,8 @@ export class WhatsappService {
     
     const queryString = params.toString();
     const url = `/v24.0/${phoneNumberId}/messages${queryString ? `?${queryString}` : ''}`;
+
+    this.logger.log('Fetching messages...', url);
     
     const response = await this.axiosInstance.get(url);
     return response.data;
