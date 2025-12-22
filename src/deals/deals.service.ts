@@ -21,6 +21,8 @@ export class DealsService {
     console.log('=== END WEBHOOK DATA ===');
 
     try {
+      this.logger.log('Processing webhook...');
+
       // Extract data from WhatsApp webhook body
       const phoneNumberId = body.phone_number_id;
       const conversation = body.conversation;
@@ -36,6 +38,8 @@ export class DealsService {
           timestamp: new Date().toISOString(),
         };
       }
+
+      this.logger.log('Finding pipeline with whatsapp enabled...');
 
       // Find pipeline with whatsapp enabled
       const supabase = this.supabaseService.getClient();
@@ -54,6 +58,7 @@ export class DealsService {
         };
       }
 
+      this.logger.log('Finding input stage for pipeline...');
       // Find stage with is_input = true for this pipeline
       const { data: stage, error: stageError } = await supabase
         .from('pipeline_stages')
@@ -72,13 +77,17 @@ export class DealsService {
       }
 
       // Check if there's already a closed deal with this phone number
+      this.logger.log('Checking if there\'s already a closed deal with this phone number...');
       if (phoneNumber) {
+        this.logger.log('Searching for existing closed deals...');
         const { data: existingClosedDeal, error: checkError } = await supabase
           .from('pipeline_stage_deals')
           .select('id, closed_at')
           .eq('phone_number', phoneNumber)
           .not('closed_at', 'is', null)
           .maybeSingle();
+
+        this.logger.log('Checking for existing closed deals...', existingClosedDeal);
 
         if (checkError) {
           this.logger.error('Error checking for existing closed deal', checkError);
@@ -89,6 +98,8 @@ export class DealsService {
             timestamp: new Date().toISOString(),
           };
         }
+
+        this.logger.log('Checking if existing closed deal exists...', existingClosedDeal);
 
         if (existingClosedDeal) {
           this.logger.log(`Closed deal already exists for phone number: ${phoneNumber}`);
@@ -101,6 +112,7 @@ export class DealsService {
         }
       }
 
+      this.logger.log('Creating deal...');
       // Create deal
       const dealData: TablesInsert<'pipeline_stage_deals'> = {
         customer_name: customerName,
@@ -109,6 +121,8 @@ export class DealsService {
         pipeline_stage_id: stage.id,
         value: 0,
       };
+
+      this.logger.log('Inserting deal...', dealData);
 
       const { data: deal, error: dealError } = await supabase
         .from('pipeline_stage_deals')
