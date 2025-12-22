@@ -63,6 +63,7 @@ export type Database = {
           color: string
           created_at: string
           id: string
+          is_input: boolean
           is_revenue: boolean
           name: string
           order: number
@@ -72,6 +73,7 @@ export type Database = {
           color?: string
           created_at?: string
           id?: string
+          is_input?: boolean
           is_revenue?: boolean
           name: string
           order: number
@@ -81,6 +83,7 @@ export type Database = {
           color?: string
           created_at?: string
           id?: string
+          is_input?: boolean
           is_revenue?: boolean
           name?: string
           order?: number
@@ -102,18 +105,24 @@ export type Database = {
           description: string
           id: string
           name: string
+          whatsapp_is_enabled: boolean
+          whatsapp_number: string
         }
         Insert: {
           created_at?: string
           description?: string
           id?: string
           name?: string
+          whatsapp_is_enabled?: boolean
+          whatsapp_number?: string
         }
         Update: {
           created_at?: string
           description?: string
           id?: string
           name?: string
+          whatsapp_is_enabled?: boolean
+          whatsapp_number?: string
         }
         Relationships: []
       }

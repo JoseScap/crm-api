@@ -6,7 +6,7 @@ export class DealsController {
   constructor(private readonly dealsService: DealsService) {}
 
   @Post('webhook/whatsapp')
-  webhook(
+  async webhook(
     @Body() body: any,
     @Headers() headers: any,
     @Query() query: any,
