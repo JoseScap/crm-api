@@ -21,7 +21,4 @@ test
 README.md
 .eslintrc.js
 .prettierrc
-tsconfig.json
-tsconfig.build.json
-nest-cli.json
 
