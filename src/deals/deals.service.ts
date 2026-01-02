@@ -64,9 +64,9 @@ export class DealsService {
           message: 'Pipeline not found or WhatsApp not enabled',
           timestamp: new Date().toISOString(),
         };
-      } else {
-        this.logger.log('Pipeline found:', pipeline);
       }
+      
+      this.logger.log('Pipeline found:', pipeline);
 
       this.logger.log('Finding input stage for pipeline...');
       // Find stage with is_input = true for this pipeline
