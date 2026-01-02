@@ -13,16 +13,16 @@ export class DealsService {
   ) {}
 
   async handleWebhook(body: any, headers: any, query: any, method: string, url: string, path: string) {
-    console.log('=== WEBHOOK RECEIVED ===');
-    console.log('Timestamp:', new Date().toISOString());
-    console.log('Method:', method);
-    console.log('URL:', url);
-    console.log('Path:', path);
-    console.log('Query Params:', JSON.stringify(query));
-    console.log('Headers:', JSON.stringify(headers));
-    console.log('Body:', JSON.stringify(body));
-    console.log('Raw Body:', body);
-    console.log('=== END WEBHOOK DATA ===');
+    this.logger.log('=== WEBHOOK RECEIVED ===');
+    this.logger.log('Timestamp:', new Date().toISOString());
+    this.logger.log('Method:', method);
+    this.logger.log('URL:', url);
+    this.logger.log('Path:', path);
+    this.logger.log('Query Params:', JSON.stringify(query));
+    this.logger.log('Headers:', JSON.stringify(headers));
+    this.logger.log('Body:', JSON.stringify(body));
+    this.logger.log('Raw Body:', body);
+    this.logger.log('=== END WEBHOOK DATA ===');
 
     try {
       this.logger.log('Processing webhook...');
@@ -62,6 +62,8 @@ export class DealsService {
           message: 'Pipeline not found or WhatsApp not enabled',
           timestamp: new Date().toISOString(),
         };
+      } else {
+        this.logger.log('Pipeline found:', pipeline);
       }
 
       this.logger.log('Finding input stage for pipeline...');
@@ -80,6 +82,8 @@ export class DealsService {
           message: 'Input stage not found for pipeline',
           timestamp: new Date().toISOString(),
         };
+      } else {
+        this.logger.log('Input stage found:', stage);
       }
 
       // Check if there's already a closed deal with this phone number
