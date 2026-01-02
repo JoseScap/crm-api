@@ -84,9 +84,9 @@ export class DealsService {
           message: 'Input stage not found for pipeline',
           timestamp: new Date().toISOString(),
         };
-      } else {
-        this.logger.log('Input stage found:', stage);
-      }
+      } 
+      
+      this.logger.log('Input stage found:', stage);
 
       // Check if there's already a closed deal with this phone number
       this.logger.log('Searching for opened deals...');
