@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { SupabaseModule } from './supabase/supabase.module';
 import { DealsModule } from './deals/deals.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
+import { CacheModule } from './cache/cache.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
       envFilePath: '.env',
     }),
     SupabaseModule,
+    CacheModule,
     DealsModule,
     WhatsappModule,
   ],

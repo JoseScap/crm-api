@@ -1,11 +1,23 @@
-import { Controller, Post, Get, Body, Headers, Query, Req, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Headers,
+  Query,
+  Req,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { DealsService } from './deals.service';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @Controller('deals')
 export class DealsController {
   constructor(private readonly dealsService: DealsService) {}
 
   @Post('whatsapp/webhook/message-received')
+  @UseGuards(ApiKeyGuard)
   async webhook(
     @Body() body: any,
     @Headers() headers: any,

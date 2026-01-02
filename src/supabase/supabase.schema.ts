@@ -412,11 +412,46 @@ export type Database = {
           },
         ]
       }
+      user_api_keys: {
+        Row: {
+          created_at: string
+          id: number
+          is_active: boolean
+          key: string
+          key_index: number
+          last_rotated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          is_active?: boolean
+          key: string
+          key_index: number
+          last_rotated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          is_active?: boolean
+          key?: string
+          key_index?: number
+          last_rotated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_secure_key: { Args: never; Returns: string }
+      generate_user_api_keys: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       get_products_low_stock: {
         Args: { p_business_id: number }
         Returns: {
@@ -455,29 +490,20 @@ export type Database = {
         Args: { p_business_id: number }
         Returns: number
       }
-      process_sale:
-        | {
-            Args: { applied_tax: number; cart_items: Json }
-            Returns: {
-              applied_tax_result: number
-              order_number: number
-              subtotal: number
-              total: number
-            }[]
-          }
-        | {
-            Args: {
-              applied_tax: number
-              cart_items: Json
-              p_business_id: number
-            }
-            Returns: {
-              applied_tax_result: number
-              order_number: number
-              subtotal: number
-              total: number
-            }[]
-          }
+      initialize_api_keys: { Args: never; Returns: boolean }
+      process_sale: {
+        Args: { applied_tax: number; cart_items: Json; p_business_id: number }
+        Returns: {
+          applied_tax_result: number
+          order_number: number
+          subtotal: number
+          total: number
+        }[]
+      }
+      rotate_user_api_key: {
+        Args: { p_key_index: number; p_user_id: string }
+        Returns: string
+      }
       validate_user_business_access: {
         Args: { p_business_id: number }
         Returns: boolean
