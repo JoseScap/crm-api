@@ -7,7 +7,7 @@ type UserApiKey = Database['public']['Tables']['user_api_keys']['Row'];
 @Injectable()
 export class CacheService implements OnModuleInit {
   private readonly logger = new Logger(CacheService.name);
-  private userApiKeysByUserId: Map<string, UserApiKey[]> = new Map();
+  private userApiKeysCache: Map<string, UserApiKey> = new Map();
 
   constructor(private supabaseService: SupabaseService) {}
 
@@ -27,19 +27,14 @@ export class CacheService implements OnModuleInit {
       }
 
       // Clear existing cache
-      this.userApiKeysByUserId.clear();
+      this.userApiKeysCache.clear();
 
-      // Populate cache grouped by user_id
+      // Populate cache by key for O(1) lookup
       if (data) {
         for (const apiKey of data) {
-          if (!this.userApiKeysByUserId.has(apiKey.user_id)) {
-            this.userApiKeysByUserId.set(apiKey.user_id, []);
-          }
-          this.userApiKeysByUserId.get(apiKey.user_id)?.push(apiKey);
+          this.userApiKeysCache.set(apiKey.key, apiKey);
         }
-        this.logger.log(
-          `Loaded ${data.length} user API keys into cache (${this.userApiKeysByUserId.size} users)`,
-        );
+        this.logger.log(`Loaded ${data.length} user API keys into cache`);
       }
     } catch (error) {
       this.logger.error('Failed to load user API keys:', error);
@@ -48,23 +43,18 @@ export class CacheService implements OnModuleInit {
   }
 
   getUserApiKey(key: string): UserApiKey | undefined {
-    // Search through all user arrays to find the key
-    for (const apiKeys of this.userApiKeysByUserId.values()) {
-      const found = apiKeys.find((apiKey) => apiKey.key === key);
-      if (found) {
-        return found;
-      }
-    }
-    return undefined;
+    return this.userApiKeysCache.get(key);
   }
 
   getUserApiKeysByUserId(userId: string): UserApiKey[] {
-    return this.userApiKeysByUserId.get(userId) || [];
+    // Filter all keys by user_id
+    return Array.from(this.userApiKeysCache.values()).filter(
+      (apiKey) => apiKey.user_id === userId,
+    );
   }
 
   getAllUserApiKeys(): UserApiKey[] {
-    // Flatten all arrays into a single array
-    return Array.from(this.userApiKeysByUserId.values()).flat();
+    return Array.from(this.userApiKeysCache.values());
   }
 
   async refreshUserApiKeys() {
