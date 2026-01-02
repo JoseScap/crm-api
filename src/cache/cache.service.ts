@@ -21,6 +21,8 @@ export class CacheService implements OnModuleInit {
       const client = this.supabaseService.getClient();
       const { data, error } = await client.from('user_api_keys').select('*');
 
+      const userDictionary = {}
+
       if (error) {
         this.logger.error('Error loading user API keys:', error);
         throw error;
@@ -33,8 +35,10 @@ export class CacheService implements OnModuleInit {
       if (data) {
         for (const apiKey of data) {
           this.userApiKeysCache.set(apiKey.key, apiKey);
+          userDictionary[apiKey.user_id] = apiKey;
         }
         this.logger.log(`Loaded ${data.length} user API keys into cache`);
+        this.logger.log(`Loaded keys for ${Object.keys(userDictionary).length} users`);
       }
     } catch (error) {
       this.logger.error('Failed to load user API keys:', error);
