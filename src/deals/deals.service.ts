@@ -13,17 +13,6 @@ export class DealsService {
   ) {}
 
   async handleWebhook(body: any, headers: any, query: any, method: string, url: string, path: string) {
-    this.logger.log('=== WEBHOOK RECEIVED ===');
-    this.logger.log('Timestamp:', new Date().toISOString());
-    this.logger.log('Method:', method);
-    this.logger.log('URL:', url);
-    this.logger.log('Path:', path);
-    this.logger.log('Query Params:', JSON.stringify(query));
-    this.logger.log('Headers:', JSON.stringify(headers));
-    this.logger.log('Body:', JSON.stringify(body));
-    this.logger.log('Raw Body:', body);
-    this.logger.log('=== END WEBHOOK DATA ===');
-
     try {
       this.logger.log('Processing webhook...');
 
@@ -34,6 +23,19 @@ export class DealsService {
       const phoneNumber = conversation?.phone_number || null;
       const email = conversation?.email || null;
       const whatsappConversationId = conversation?.id || null;
+
+      this.logger.log('=== WEBHOOK RECEIVED ===');
+      this.logger.log('Timestamp:', new Date().toISOString());
+      this.logger.log('Method:', method);
+      this.logger.log('URL:', url);
+      this.logger.log('Path:', path);
+      this.logger.log('Phone Number ID:', phoneNumberId);
+      this.logger.log('Conversation:', conversation);
+      this.logger.log('Customer Name:', customerName);
+      this.logger.log('Phone Number:', phoneNumber);
+      this.logger.log('Email:', email);
+      this.logger.log('Whatsapp Conversation ID:', whatsappConversationId);
+      this.logger.log('=== END WEBHOOK DATA ===');
 
       if (!phoneNumberId) {
         this.logger.warn('Missing phone_number_id in webhook body');
@@ -87,43 +89,38 @@ export class DealsService {
       }
 
       // Check if there's already a closed deal with this phone number
-      this.logger.log('Checking if there\'s already a closed deal with this phone number...');
-      if (phoneNumber) {
-        this.logger.log('Searching for existing closed deals...');
-        const { data: existingClosedDeal, error: checkError } = await supabase
-          .from('pipeline_stage_deals')
-          .select('id, closed_at')
-          .eq('phone_number', phoneNumber)
-          .not('closed_at', 'is', null)
-          .maybeSingle();
+      this.logger.log('Searching for opened deals...');
 
-        this.logger.log('Checking for existing closed deals...', existingClosedDeal);
+      const { count, error: checkError } = await supabase
+        .from('pipeline_stage_deals')
+        .select('*', { count: 'exact', head: true })
+        .eq('phone_number', phoneNumber)
+        .is('closed_at', null);
 
-        if (checkError) {
-          this.logger.error('Error checking for existing closed deal', checkError);
-          return {
-            status: 'error',
-            message: 'Error checking for existing deals',
-            error: checkError?.message,
-            timestamp: new Date().toISOString(),
-          };
-        }
+      this.logger.log('Checking for existing opened deals...', { count });
 
-        this.logger.log('Checking if existing closed deal exists...', existingClosedDeal);
-
-        if (existingClosedDeal) {
-          this.logger.log(`Closed deal already exists for phone number: ${phoneNumber}`);
-          return {
-            status: 'skipped',
-            message: 'Closed deal already exists for this phone number',
-            existing_deal_id: existingClosedDeal.id,
-            timestamp: new Date().toISOString(),
-          };
-        }
+      if (checkError) {
+        this.logger.error('Error checking for existing opened deal', checkError);
+        return {
+          status: 'error',
+          message: 'Error checking for existing deals',
+          error: checkError?.message,
+          timestamp: new Date().toISOString(),
+        };
       }
 
-      this.logger.log('Creating deal...');
-      // Create deal
+      if (count && count > 0) {
+        this.logger.log(`Existing opened deal found. Count: ${count}`);
+        return {
+          status: 'skipped',
+          message: 'Opened deal already exists for this phone number',
+          count,
+          timestamp: new Date().toISOString(),
+        };
+      }
+
+      this.logger.log('Creating new deal...');
+      // Create new deal
       const dealData: TablesInsert<'pipeline_stage_deals'> = {
         customer_name: customerName,
         phone_number: phoneNumber,
@@ -134,7 +131,7 @@ export class DealsService {
         business_id: stage.business_id,
       };
 
-      this.logger.log('Inserting deal...', dealData);
+      this.logger.log('Inserting new deal...', dealData);
 
       const { data: deal, error: dealError } = await supabase
         .from('pipeline_stage_deals')
