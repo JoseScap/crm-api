@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { DealsService } from './deals.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
+import { SignatureGuard, UseSignature } from '../auth/signature.guard';
+import { knownSignatureConfigs } from 'src/auth/signature.config';
 
 @Controller('deals')
 export class DealsController {
@@ -18,6 +20,13 @@ export class DealsController {
 
   @Post('whatsapp/webhook/message-received')
   @UseGuards(ApiKeyGuard)
+  @UseSignature({
+    secretKeyEnvVar: knownSignatureConfigs.KAPSO_WEBHOOK.secretEnvVar,
+    headerNameEnvVar: knownSignatureConfigs.KAPSO_WEBHOOK.headerEnvVar,
+    algorithm: 'sha256',
+    encoding: 'hex',
+  })
+  @UseGuards(SignatureGuard)
   async webhook(
     @Body() body: any,
     @Headers() headers: any,
