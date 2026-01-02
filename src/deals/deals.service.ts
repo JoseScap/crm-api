@@ -68,7 +68,7 @@ export class DealsService {
       // Find stage with is_input = true for this pipeline
       const { data: stage, error: stageError } = await supabase
         .from('pipeline_stages')
-        .select('id')
+        .select('id, business_id')
         .eq('pipeline_id', pipeline.id)
         .eq('is_input', true)
         .single();
@@ -127,6 +127,7 @@ export class DealsService {
         pipeline_stage_id: stage.id,
         value: 0,
         whatsapp_conversation_id: whatsappConversationId,
+        business_id: stage.business_id,
       };
 
       this.logger.log('Inserting deal...', dealData);

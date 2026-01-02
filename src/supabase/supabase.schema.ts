@@ -14,44 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      businesses: {
+        Row: {
+          address: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: number
+          is_active: boolean
+          name: string
+          owner_id: string
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: number
+          is_active?: boolean
+          name: string
+          owner_id: string
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: number
+          is_active?: boolean
+          name?: string
+          owner_id?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
       pipeline_stage_deals: {
         Row: {
+          business_id: number
           closed_at: string | null
           created_at: string
           customer_name: string
           email: string | null
-          id: string
+          id: number
+          is_active: boolean
           is_revenue: boolean | null
           phone_number: string | null
-          pipeline_stage_id: string | null
+          pipeline_stage_id: number | null
           value: number
           whatsapp_conversation_id: string | null
         }
         Insert: {
+          business_id: number
           closed_at?: string | null
           created_at?: string
           customer_name: string
           email?: string | null
-          id?: string
+          id?: number
+          is_active?: boolean
           is_revenue?: boolean | null
           phone_number?: string | null
-          pipeline_stage_id?: string | null
+          pipeline_stage_id?: number | null
           value: number
           whatsapp_conversation_id?: string | null
         }
         Update: {
+          business_id?: number
           closed_at?: string | null
           created_at?: string
           customer_name?: string
           email?: string | null
-          id?: string
+          id?: number
+          is_active?: boolean
           is_revenue?: boolean | null
           phone_number?: string | null
-          pipeline_stage_id?: string | null
+          pipeline_stage_id?: number | null
           value?: number
           whatsapp_conversation_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "pipeline_stage_deals_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pipeline_stage_deals_pipeline_stage_id_fkey"
             columns: ["pipeline_stage_id"]
@@ -63,36 +112,49 @@ export type Database = {
       }
       pipeline_stages: {
         Row: {
+          business_id: number
           color: string
           created_at: string
-          id: string
+          id: number
+          is_active: boolean
           is_input: boolean
           is_revenue: boolean
           name: string
           order: number
-          pipeline_id: string
+          pipeline_id: number
         }
         Insert: {
-          color?: string
+          business_id: number
+          color: string
           created_at?: string
-          id?: string
+          id?: number
+          is_active?: boolean
           is_input?: boolean
           is_revenue?: boolean
           name: string
           order: number
-          pipeline_id?: string
+          pipeline_id: number
         }
         Update: {
+          business_id?: number
           color?: string
           created_at?: string
-          id?: string
+          id?: number
+          is_active?: boolean
           is_input?: boolean
           is_revenue?: boolean
           name?: string
           order?: number
-          pipeline_id?: string
+          pipeline_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "pipeline_stages_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pipeline_stages_pipeline_id_fkey"
             columns: ["pipeline_id"]
@@ -104,106 +166,133 @@ export type Database = {
       }
       pipelines: {
         Row: {
+          business_id: number
           created_at: string
           description: string
-          id: string
+          id: number
+          is_active: boolean
           name: string
           whatsapp_is_enabled: boolean
           whatsapp_number: string | null
           whatsapp_phone_number_id: string | null
         }
         Insert: {
+          business_id: number
           created_at?: string
-          description?: string
-          id?: string
-          name?: string
+          description: string
+          id?: number
+          is_active?: boolean
+          name: string
           whatsapp_is_enabled?: boolean
           whatsapp_number?: string | null
           whatsapp_phone_number_id?: string | null
         }
         Update: {
+          business_id?: number
           created_at?: string
           description?: string
-          id?: string
+          id?: number
+          is_active?: boolean
           name?: string
           whatsapp_is_enabled?: boolean
           whatsapp_number?: string | null
           whatsapp_phone_number_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pipelines_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_categories: {
         Row: {
+          business_id: number
           created_at: string
           description: string | null
-          id: string
+          id: number
+          is_active: boolean
           name: string
         }
         Insert: {
+          business_id: number
           created_at?: string
           description?: string | null
-          id?: string
+          id?: number
+          is_active?: boolean
           name: string
         }
         Update: {
+          business_id?: number
           created_at?: string
           description?: string | null
-          id?: string
+          id?: number
+          is_active?: boolean
           name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "product_categories_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_snapshots: {
         Row: {
+          business_id: number
           created_at: string
-          id: string
+          id: number
+          is_active: boolean
           name: string
           price: string
-          product_id: string | null
+          product_id: number | null
           quantity: number
-          sale_id: string
+          sale_id: number
           sku: string
         }
         Insert: {
+          business_id: number
           created_at?: string
-          id?: string
+          id?: number
+          is_active?: boolean
           name: string
           price: string
-          product_id?: string | null
+          product_id?: number | null
           quantity: number
-          sale_id: string
+          sale_id: number
           sku: string
         }
         Update: {
+          business_id?: number
           created_at?: string
-          id?: string
+          id?: number
+          is_active?: boolean
           name?: string
           price?: string
-          product_id?: string | null
+          product_id?: number | null
           quantity?: number
-          sale_id?: string
+          sale_id?: number
           sku?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "product_snapshots_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_snapshots_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_snapshots_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products_low_stock"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_snapshots_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products_out_of_stock"
             referencedColumns: ["id"]
           },
           {
@@ -217,39 +306,49 @@ export type Database = {
       }
       products: {
         Row: {
+          business_id: number
           created_at: string
-          id: string
+          id: number
           is_active: boolean
           minimum_stock: number | null
           name: string
           price: number
-          product_category_id: string | null
+          product_category_id: number | null
           sku: string
           stock: number
         }
         Insert: {
+          business_id: number
           created_at?: string
-          id?: string
+          id?: number
           is_active?: boolean
           minimum_stock?: number | null
           name: string
           price: number
-          product_category_id?: string | null
+          product_category_id?: number | null
           sku: string
-          stock: number
+          stock?: number
         }
         Update: {
+          business_id?: number
           created_at?: string
-          id?: string
+          id?: number
           is_active?: boolean
           minimum_stock?: number | null
           name?: string
           price?: number
-          product_category_id?: string | null
+          product_category_id?: number | null
           sku?: string
           stock?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "products_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_product_category_id_fkey"
             columns: ["product_category_id"]
@@ -262,136 +361,126 @@ export type Database = {
       sales: {
         Row: {
           applied_tax: number
+          business_id: number
           created_at: string
-          id: string
+          deal_id: number | null
+          id: number
+          is_active: boolean
+          is_open: boolean
           order_number: number
           subtotal: number
           total: number
         }
         Insert: {
           applied_tax?: number
+          business_id: number
           created_at?: string
-          id?: string
-          order_number?: number
+          deal_id?: number | null
+          id?: number
+          is_active?: boolean
+          is_open?: boolean
+          order_number: number
           subtotal: number
           total: number
         }
         Update: {
           applied_tax?: number
+          business_id?: number
           created_at?: string
-          id?: string
+          deal_id?: number | null
+          id?: number
+          is_active?: boolean
+          is_open?: boolean
           order_number?: number
           subtotal?: number
           total?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sales_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stage_deals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
-      products_low_stock: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          minimum_stock: number | null
-          name: string | null
-          price: number | null
-          product_category_id: string | null
-          sku: string | null
-          stock: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          minimum_stock?: number | null
-          name?: string | null
-          price?: number | null
-          product_category_id?: string | null
-          sku?: string | null
-          stock?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          minimum_stock?: number | null
-          name?: string | null
-          price?: number | null
-          product_category_id?: string | null
-          sku?: string | null
-          stock?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "products_product_category_id_fkey"
-            columns: ["product_category_id"]
-            isOneToOne: false
-            referencedRelation: "product_categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      products_low_stock_total: {
-        Row: {
-          count: number | null
-        }
-        Relationships: []
-      }
-      products_out_of_stock: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          minimum_stock: number | null
-          name: string | null
-          price: number | null
-          product_category_id: string | null
-          sku: string | null
-          stock: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          minimum_stock?: number | null
-          name?: string | null
-          price?: number | null
-          product_category_id?: string | null
-          sku?: string | null
-          stock?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          minimum_stock?: number | null
-          name?: string | null
-          price?: number | null
-          product_category_id?: string | null
-          sku?: string | null
-          stock?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "products_product_category_id_fkey"
-            columns: ["product_category_id"]
-            isOneToOne: false
-            referencedRelation: "product_categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      products_out_of_stock_total: {
-        Row: {
-          count: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
-      process_sale: {
-        Args: { applied_tax: number; cart_items: Json }
+      get_products_low_stock: {
+        Args: { p_business_id: number }
         Returns: {
-          applied_tax_result: number
-          order_number: number
-          subtotal: number
-          total: number
+          business_id: number
+          created_at: string
+          id: number
+          is_active: boolean
+          minimum_stock: number
+          name: string
+          price: number
+          product_category_id: number
+          sku: string
+          stock: number
         }[]
+      }
+      get_products_low_stock_total: {
+        Args: { p_business_id: number }
+        Returns: number
+      }
+      get_products_out_of_stock: {
+        Args: { p_business_id: number }
+        Returns: {
+          business_id: number
+          created_at: string
+          id: number
+          is_active: boolean
+          minimum_stock: number
+          name: string
+          price: number
+          product_category_id: number
+          sku: string
+          stock: number
+        }[]
+      }
+      get_products_out_of_stock_total: {
+        Args: { p_business_id: number }
+        Returns: number
+      }
+      process_sale:
+        | {
+            Args: { applied_tax: number; cart_items: Json }
+            Returns: {
+              applied_tax_result: number
+              order_number: number
+              subtotal: number
+              total: number
+            }[]
+          }
+        | {
+            Args: {
+              applied_tax: number
+              cart_items: Json
+              p_business_id: number
+            }
+            Returns: {
+              applied_tax_result: number
+              order_number: number
+              subtotal: number
+              total: number
+            }[]
+          }
+      validate_user_business_access: {
+        Args: { p_business_id: number }
+        Returns: boolean
       }
     }
     Enums: {
