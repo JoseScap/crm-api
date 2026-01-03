@@ -9,14 +9,14 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { DealsService } from './deals.service';
+import { LeadsService } from './leads.service';
 import { ApiKeyGuard } from '../auth/api-key.guard';
 import { SignatureGuard, UseSignature } from '../auth/signature.guard';
 import { knownSignatureConfigs } from 'src/auth/signature.config';
 
-@Controller('deals')
-export class DealsController {
-  constructor(private readonly dealsService: DealsService) {}
+@Controller('leads')
+export class LeadsController {
+  constructor(private readonly leadsService: LeadsService) {}
 
   @Post('whatsapp/webhook/message-received')
   @UseGuards(ApiKeyGuard)
@@ -33,7 +33,7 @@ export class DealsController {
     @Query() query: any,
     @Req() request: any,
   ) {
-    return this.dealsService.handleWebhook(
+    return this.leadsService.handleWebhook(
       body,
       headers,
       query,
@@ -85,7 +85,7 @@ export class DealsController {
       options.after = after;
     }
 
-    return this.dealsService.getChatMessages(phoneNumberId, options);
+    return this.leadsService.getChatMessages(phoneNumberId, options);
   }
 
   @Post('whatsapp/messages/:phoneNumberId')
@@ -93,7 +93,7 @@ export class DealsController {
     @Param('phoneNumberId') phoneNumberId: string,
     @Body() body: { to: string; text: string; preview_url?: boolean },
   ) {
-    return this.dealsService.sendMessage(
+    return this.leadsService.sendMessage(
       phoneNumberId,
       body.to,
       body.text,

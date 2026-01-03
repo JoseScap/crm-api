@@ -50,7 +50,7 @@ export type Database = {
         }
         Relationships: []
       }
-      pipeline_stage_deals: {
+      pipeline_stage_leads: {
         Row: {
           business_id: number
           closed_at: string | null
@@ -95,14 +95,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "pipeline_stage_deals_business_id_fkey"
+            foreignKeyName: "pipeline_stage_leads_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "pipeline_stage_deals_pipeline_stage_id_fkey"
+            foreignKeyName: "pipeline_stage_leads_pipeline_stage_id_fkey"
             columns: ["pipeline_stage_id"]
             isOneToOne: false
             referencedRelation: "pipeline_stages"
@@ -363,7 +363,7 @@ export type Database = {
           applied_tax: number
           business_id: number
           created_at: string
-          deal_id: number | null
+          lead_id: number | null
           id: number
           is_active: boolean
           is_open: boolean
@@ -375,7 +375,7 @@ export type Database = {
           applied_tax?: number
           business_id: number
           created_at?: string
-          deal_id?: number | null
+          lead_id?: number | null
           id?: number
           is_active?: boolean
           is_open?: boolean
@@ -387,7 +387,7 @@ export type Database = {
           applied_tax?: number
           business_id?: number
           created_at?: string
-          deal_id?: number | null
+          lead_id?: number | null
           id?: number
           is_active?: boolean
           is_open?: boolean
@@ -404,10 +404,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "sales_deal_id_fkey"
-            columns: ["deal_id"]
+            foreignKeyName: "sales_lead_id_fkey"
+            columns: ["lead_id"]
             isOneToOne: false
-            referencedRelation: "pipeline_stage_deals"
+            referencedRelation: "pipeline_stage_leads"
             referencedColumns: ["id"]
           },
         ]

@@ -4,8 +4,8 @@ import { WhatsappService } from '../whatsapp/whatsapp.service';
 import { TablesInsert } from '../supabase/supabase.schema';
 
 @Injectable()
-export class DealsService {
-  private readonly logger = new Logger(DealsService.name);
+export class LeadsService {
+  private readonly logger = new Logger(LeadsService.name);
 
   constructor(
     private readonly supabaseService: SupabaseService,
@@ -88,40 +88,40 @@ export class DealsService {
       
       this.logger.log('Input stage found:', stage);
 
-      // Check if there's already a closed deal with this phone number
-      this.logger.log('Searching for opened deals...');
+      // Check if there's already a closed lead with this phone number
+      this.logger.log('Searching for opened leads...');
 
       const { count, error: checkError } = await supabase
-        .from('pipeline_stage_deals')
+        .from('pipeline_stage_leads')
         .select('*', { count: 'exact', head: true })
         .eq('phone_number', phoneNumber)
         .is('closed_at', null);
 
-      this.logger.log('Checking for existing opened deals...', { count });
+      this.logger.log('Checking for existing opened leads...', { count });
 
       if (checkError) {
-        this.logger.error('Error checking for existing opened deal', checkError);
+        this.logger.error('Error checking for existing opened lead', checkError);
         return {
           status: 'error',
-          message: 'Error checking for existing deals',
+          message: 'Error checking for existing leads',
           error: checkError?.message,
           timestamp: new Date().toISOString(),
         };
       }
 
       if (count && count > 0) {
-        this.logger.log(`Existing opened deal found. Count: ${count}`);
+        this.logger.log(`Existing opened lead found. Count: ${count}`);
         return {
           status: 'skipped',
-          message: 'Opened deal already exists for this phone number',
+          message: 'Opened lead already exists for this phone number',
           count,
           timestamp: new Date().toISOString(),
         };
       }
 
-      this.logger.log('Creating new deal...');
-      // Create new deal
-      const dealData: TablesInsert<'pipeline_stage_deals'> = {
+      this.logger.log('Creating new lead...');
+      // Create new lead
+      const leadData: TablesInsert<'pipeline_stage_leads'> = {
         customer_name: customerName,
         phone_number: phoneNumber,
         email: email,
@@ -131,29 +131,29 @@ export class DealsService {
         business_id: stage.business_id,
       };
 
-      this.logger.log('Inserting new deal...', dealData);
+      this.logger.log('Inserting new lead...', leadData);
 
-      const { data: deal, error: dealError } = await supabase
-        .from('pipeline_stage_deals')
-        .insert(dealData)
+      const { data: lead, error: leadError } = await supabase
+        .from('pipeline_stage_leads')
+        .insert(leadData)
         .select()
         .single();
 
-      if (dealError || !deal) {
-        this.logger.error('Error creating deal', dealError);
+      if (leadError || !lead) {
+        this.logger.error('Error creating lead', leadError);
         return {
           status: 'error',
-          message: 'Failed to create deal',
-          error: dealError?.message,
+          message: 'Failed to create lead',
+          error: leadError?.message,
           timestamp: new Date().toISOString(),
         };
       }
 
-      this.logger.log(`Deal created successfully: ${deal.id}`);
+      this.logger.log(`Lead created successfully: ${lead.id}`);
       return {
         status: 'success',
-        message: 'Webhook processed and deal created',
-        deal_id: deal.id,
+        message: 'Webhook processed and lead created',
+        lead_id: lead.id,
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
