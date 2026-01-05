@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
-import { WebhooksService } from '../webhooks/webhooks.service';
+import { OutgoingWebhooksService } from '../webhooks/outgoing-webhooks.service';
 import { TablesInsert, Tables } from '../supabase/supabase.schema';
 import { WhatsappWebhookRequest } from './leads.types';
 
@@ -12,7 +12,7 @@ export class LeadsService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly whatsappService: WhatsappService,
-    private readonly webhooksService: WebhooksService,
+    private readonly outgoingWebhooksService: OutgoingWebhooksService,
   ) {}
 
   async handleWhatsappWebhook(request: WhatsappWebhookRequest) {
@@ -74,7 +74,7 @@ export class LeadsService {
       );
 
       // Send webhook data if webhook_url is configured (fire and forget)
-      this.webhooksService
+      this.outgoingWebhooksService
         .executeStageWebhook(stage, {
           lead,
           business,

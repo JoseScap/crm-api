@@ -5,8 +5,8 @@ import { ChatMessage } from './webhooks.types';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 
 @Injectable()
-export class WebhooksService {
-  private readonly logger = new Logger(WebhooksService.name);
+export class OutgoingWebhooksService {
+  private readonly logger = new Logger(OutgoingWebhooksService.name);
 
   constructor(private readonly whatsappService: WhatsappService) {}
 
