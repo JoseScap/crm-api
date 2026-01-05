@@ -1,4 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 import { SupabaseService } from '../supabase/supabase.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 import { TablesInsert } from '../supabase/supabase.schema';
@@ -10,6 +12,7 @@ export class LeadsService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly whatsappService: WhatsappService,
+    private readonly configService: ConfigService,
   ) {}
 
   async handleWebhook(body: any, headers: any, query: any, method: string, url: string, path: string) {
@@ -218,6 +221,75 @@ export class LeadsService {
       return {
         status: 'error',
         message: 'Failed to send message',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  async testAiAgent() {
+    try {
+      const baseUrl = this.configService.get<string>('AI_AGENT_BASE_URL');
+      
+      if (!baseUrl) {
+        this.logger.error('AI_AGENT_BASE_URL environment variable is not set');
+        return {
+          status: 'error',
+          message: 'AI_AGENT_BASE_URL environment variable is not configured',
+        };
+      }
+
+      this.logger.log(`Testing AI Agent connection to: ${baseUrl}`);
+
+      // Dummy body for testing
+      const dummyBody = {
+        test: true,
+        message: 'This is a test request to verify API connection',
+        timestamp: new Date().toISOString(),
+      };
+
+      this.logger.log(`Sending POST request with body:`, dummyBody);
+
+      const response = await axios.post(baseUrl, dummyBody, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 10000, // 10 seconds timeout
+      });
+
+      this.logger.log(`AI Agent response received - Status: ${response.status}`);
+      this.logger.debug(`Response data:`, response.data);
+
+      return {
+        status: 'success',
+        message: 'AI Agent connection test successful',
+        baseUrl,
+        response: {
+          status: response.status,
+          statusText: response.statusText,
+          data: response.data,
+        },
+      };
+    } catch (error) {
+      this.logger.error('Error testing AI Agent connection:', error);
+      
+      if (axios.isAxiosError(error)) {
+        return {
+          status: 'error',
+          message: 'Failed to connect to AI Agent',
+          baseUrl: this.configService.get<string>('AI_AGENT_BASE_URL'),
+          error: {
+            message: error.message,
+            code: error.code,
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+          },
+        };
+      }
+
+      return {
+        status: 'error',
+        message: 'Unexpected error testing AI Agent connection',
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
