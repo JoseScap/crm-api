@@ -97,7 +97,6 @@ export class WebhooksService {
     };
 
     this.logger.log('Webhook payload:', JSON.stringify(requestBody, null, 2));
-    this.logger.log('Messages:', JSON.stringify(messages, null, 2));
     this.logger.log('Webhook URL:', webhookUrl);
 
     try {
