@@ -36,6 +36,11 @@ export class LeadsService {
       this.logger.log('Email:', email);
       this.logger.log('Whatsapp Conversation ID:', whatsappConversationId);
       this.logger.log('=== END WEBHOOK DATA ===');
+      const parsedBody = JSON.parse(body);
+      for (const entry of Object.entries(parsedBody)) {
+        const [key, value] = entry;
+        this.logger.log(`${key}: ${value}`);
+      }
 
       if (!phoneNumberId) {
         this.logger.warn('Missing phone_number_id in webhook body');
