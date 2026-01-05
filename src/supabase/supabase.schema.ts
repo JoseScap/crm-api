@@ -115,7 +115,7 @@ export type Database = {
       }
       pipeline_stages: {
         Row: {
-          ai_prompt: string | null
+          ai_context: string | null
           business_id: number
           color: string
           created_at: string
@@ -128,7 +128,7 @@ export type Database = {
           pipeline_id: number
         }
         Insert: {
-          ai_prompt?: string | null
+          ai_context?: string | null
           business_id: number
           color: string
           created_at?: string
@@ -141,7 +141,7 @@ export type Database = {
           pipeline_id: number
         }
         Update: {
-          ai_prompt?: string | null
+          ai_context?: string | null
           business_id?: number
           color?: string
           created_at?: string

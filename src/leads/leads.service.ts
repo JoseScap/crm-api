@@ -117,16 +117,16 @@ export class LeadsService {
 
       let aiInfo: {
         leadId: number,
-        currentStageAiPrompt: string,
         businessAiContext: string,
-      } = { leadId: 0, currentStageAiPrompt: '', businessAiContext: '' };
+        currentStageAiContext: string,
+      } = { leadId: 0, currentStageAiContext: '', businessAiContext: '' };
 
       if (count && count > 0) {
         this.logger.log(`Existing opened lead found. Count: ${count}`);
         // Get the existing lead ID for logging purposes
         const { data: existingLead } = await supabase
           .from('pipeline_stage_leads')
-          .select('id, pipeline_stages(ai_prompt)')
+          .select('id, pipeline_stages(ai_context)')
           .eq('phone_number', phoneNumber)
           .is('closed_at', null)
           .limit(1)
@@ -134,9 +134,9 @@ export class LeadsService {
         
         if (existingLead) {
           aiInfo = {
-            businessAiContext: business.ai_context ?? '',
             leadId: existingLead.id,
-            currentStageAiPrompt: existingLead.pipeline_stages?.ai_prompt ?? '',
+            businessAiContext: business.ai_context ?? '',
+            currentStageAiContext: existingLead.pipeline_stages?.ai_context ?? '',
           };
         }
       } else {
@@ -157,7 +157,7 @@ export class LeadsService {
         const { data: lead, error: leadError } = await supabase
           .from('pipeline_stage_leads')
           .insert(leadData)
-          .select('id, pipeline_stages(ai_prompt)')
+          .select('id, pipeline_stages(ai_context)')
           .single();
 
         if (leadError || !lead) {
@@ -173,7 +173,7 @@ export class LeadsService {
         this.logger.log(`Lead created successfully: ${lead.id}`);
         aiInfo = {
           leadId: lead.id,
-          currentStageAiPrompt: lead.pipeline_stages?.ai_prompt ?? '',
+          currentStageAiContext: lead.pipeline_stages?.ai_context ?? '',
           businessAiContext: business.ai_context ?? '',
         };
       }
@@ -295,9 +295,9 @@ export class LeadsService {
     phoneNumber: string,
     conversationId: string | null,
     agentInfo: {
-      businessAiContext: string,
       leadId: number,
-      currentStageAiPrompt: string,
+      businessAiContext: string,
+      currentStageAiContext: string,
     },
   ): Promise<void> {
     const baseUrl = this.configService.get<string>('AI_AGENT_BASE_URL');
@@ -367,10 +367,10 @@ export class LeadsService {
 
     // Prepare request body
     const requestBody: HandleEventDto = {
-      businessAiContext: agentInfo.businessAiContext,
-      messages: chatMessages,
       leadId: agentInfo.leadId,
-      currentStageAiPrompt: agentInfo.currentStageAiPrompt,
+      messages: chatMessages,
+      businessAiContext: agentInfo.businessAiContext,
+      currentStageAiContext: agentInfo.currentStageAiContext,
     };
 
     const url = `${baseUrl}/agent/handle-event`;

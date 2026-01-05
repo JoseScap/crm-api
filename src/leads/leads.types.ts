@@ -7,8 +7,8 @@ export interface ChatMessage {
 
 export interface HandleEventDto {
   leadId: number;
-  businessAiContext: string;
   messages: ChatMessage[];
-  currentStageAiPrompt: string;
+  businessAiContext: string;
+  currentStageAiContext: string;
 }
 
