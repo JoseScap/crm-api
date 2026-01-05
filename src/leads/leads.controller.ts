@@ -100,5 +100,10 @@ export class LeadsController {
       body.preview_url,
     );
   }
+
+  @Get('test-ai-agent')
+  async testAiAgent() {
+    return this.leadsService.testAiAgent();
+  }
 }
 
