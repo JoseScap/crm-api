@@ -16,6 +16,8 @@ export class WebhooksService {
       lead: Tables<'pipeline_stage_leads'>;
       business: Tables<'businesses'>;
       pipeline: Tables<'pipelines'>;
+      previousStages: Tables<'pipeline_stages'>[];
+      nextStages: Tables<'pipeline_stages'>[];
     },
   ): Promise<void> {
     if (!stage.webhook_url) {
@@ -93,6 +95,8 @@ export class WebhooksService {
       business: data.business,
       stage: stage,
       pipeline: data.pipeline,
+      previousStages: data.previousStages,
+      nextStages: data.nextStages,
       messages: messages,
     };
 

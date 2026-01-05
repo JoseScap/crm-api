@@ -67,12 +67,20 @@ export class LeadsService {
         stage,
       );
 
+      // Get related stages (previous and next)
+      const { previousStages, nextStages } = await this.getRelatedStages(
+        pipeline.id,
+        stage.order,
+      );
+
       // Send webhook data if webhook_url is configured (fire and forget)
       this.webhooksService
         .executeStageWebhook(stage, {
           lead,
           business,
           pipeline,
+          previousStages,
+          nextStages,
         })
         .catch((webhookError) => {
           this.logger.error(
@@ -264,6 +272,58 @@ export class LeadsService {
       leadId: lead.id,
       isNewLead: true,
       lead: lead,
+    };
+  }
+
+  private async getRelatedStages(
+    pipelineId: number,
+    currentOrder: number,
+  ): Promise<{
+    previousStages: Tables<'pipeline_stages'>[];
+    nextStages: Tables<'pipeline_stages'>[];
+  }> {
+    this.logger.log(
+      `Getting related stages for pipeline ${pipelineId} with order ${currentOrder}`,
+    );
+    const supabase = this.supabaseService.getClient();
+
+    // Get previous and next stages in parallel
+    const [previousResult, nextResult] = await Promise.all([
+      // Previous stages: order < currentOrder
+      supabase
+        .from('pipeline_stages')
+        .select('*')
+        .eq('pipeline_id', pipelineId)
+        .lt('order', currentOrder)
+        .order('order', { ascending: false }),
+      // Next stages: order > currentOrder
+      supabase
+        .from('pipeline_stages')
+        .select('*')
+        .eq('pipeline_id', pipelineId)
+        .gt('order', currentOrder)
+        .order('order', { ascending: true }),
+    ]);
+
+    const previousStages = previousResult.data || [];
+    const nextStages = nextResult.data || [];
+
+    if (previousResult.error) {
+      this.logger.warn(
+        `Error fetching previous stages: ${previousResult.error.message}`,
+      );
+    }
+    if (nextResult.error) {
+      this.logger.warn(`Error fetching next stages: ${nextResult.error.message}`);
+    }
+
+    this.logger.log(
+      `Found ${previousStages.length} previous stages and ${nextStages.length} next stages`,
+    );
+
+    return {
+      previousStages,
+      nextStages,
     };
   }
 
