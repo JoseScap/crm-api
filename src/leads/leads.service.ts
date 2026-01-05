@@ -4,6 +4,7 @@ import axios from 'axios';
 import { SupabaseService } from '../supabase/supabase.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 import { TablesInsert } from '../supabase/supabase.schema';
+import { HandleEventDto, ChatMessage } from './leads.types';
 
 @Injectable()
 export class LeadsService {
@@ -140,6 +141,22 @@ export class LeadsService {
       }
 
       this.logger.log(`Lead created successfully: ${lead.id}`);
+
+      // Get last 10 messages from the chat and send to AI Agent
+      try {
+        await this.sendChatContextToAiAgent(
+          phoneNumberId,
+          phoneNumber,
+          whatsappConversationId,
+        );
+      } catch (aiError) {
+        // Log error but don't fail the webhook processing
+        this.logger.error(
+          `Error sending chat context to AI Agent for lead ${lead.id}:`,
+          aiError,
+        );
+      }
+
       return {
         status: 'success',
         message: 'Webhook processed and lead created',
@@ -226,77 +243,96 @@ export class LeadsService {
     }
   }
 
-  async testAiAgent() {
-    try {
-      const baseUrl = this.configService.get<string>('AI_AGENT_BASE_URL');
-      
-      if (!baseUrl) {
-        this.logger.error('AI_AGENT_BASE_URL environment variable is not set');
-        return {
-          status: 'error',
-          message: 'AI_AGENT_BASE_URL environment variable is not configured',
-        };
-      }
+  private async sendChatContextToAiAgent(
+    phoneNumberId: string,
+    phoneNumber: string,
+    conversationId: string | null,
+  ): Promise<void> {
+    const baseUrl = this.configService.get<string>('AI_AGENT_BASE_URL');
 
-      this.logger.log(`Testing AI Agent connection to: ${baseUrl}`);
-
-      // Dummy body for testing
-      const dummyBody = {
-        test: true,
-        message: 'This is a test request to verify API connection',
-        timestamp: new Date().toISOString(),
-      };
-
-      this.logger.log(`Sending POST request with body:`, dummyBody);
-
-      const url = baseUrl + "/agent/handle-event";
-
-      this.logger.log(`Sending POST request to: ${url}`);
-
-      const response = await axios.post(url, dummyBody, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        timeout: 10000, // 10 seconds timeout
-      });
-
-      this.logger.log(`AI Agent response received - Status: ${response.status}`);
-      this.logger.debug(`Response data:`, response.data);
-
-      return {
-        status: 'success',
-        message: 'AI Agent connection test successful',
-        baseUrl,
-        response: {
-          status: response.status,
-          statusText: response.statusText,
-          data: response.data,
-        },
-      };
-    } catch (error) {
-      this.logger.error('Error testing AI Agent connection:', error);
-      
-      if (axios.isAxiosError(error)) {
-        return {
-          status: 'error',
-          message: 'Failed to connect to AI Agent',
-          baseUrl: this.configService.get<string>('AI_AGENT_BASE_URL'),
-          error: {
-            message: error.message,
-            code: error.code,
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            data: error.response?.data,
-          },
-        };
-      }
-
-      return {
-        status: 'error',
-        message: 'Unexpected error testing AI Agent connection',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
+    if (!baseUrl) {
+      this.logger.warn(
+        'AI_AGENT_BASE_URL not configured, skipping AI Agent notification',
+      );
+      return;
     }
+
+    if (!conversationId) {
+      this.logger.warn(
+        'No conversation ID available, skipping AI Agent notification',
+      );
+      return;
+    }
+
+    this.logger.log(
+      `Fetching last 10 messages for conversation ${conversationId}`,
+    );
+
+    // Get last 10 messages from WhatsApp
+    const messagesResponse = await this.whatsappService.getMessages(
+      phoneNumberId,
+      {
+        phoneNumber,
+        conversationId,
+        limit: 10,
+      },
+    );
+
+    const messages = messagesResponse?.data || [];
+    this.logger.log(`Retrieved ${messages.length} messages from WhatsApp`);
+
+    // Transform messages to ChatMessage format
+    const chatMessages: ChatMessage[] = messages
+      .map((msg: any) => {
+        // Determine message type based on from/to fields
+        // If message.from matches phoneNumber, it's from customer
+        // Otherwise, it's from salesperson
+        const isFromCustomer =
+          msg.from === phoneNumber || msg.from?.includes(phoneNumber);
+        const messageType: 'customer' | 'salesperson' = isFromCustomer
+          ? 'customer'
+          : 'salesperson';
+
+        // Extract message text (could be in different fields depending on API)
+        const messageText =
+          msg.text?.body || msg.body || msg.message || JSON.stringify(msg);
+
+        return {
+          type: messageType,
+          message: messageText,
+        };
+      })
+      .filter((msg: ChatMessage) => msg.message); // Filter out empty messages
+
+    if (chatMessages.length === 0) {
+      this.logger.warn('No valid messages found to send to AI Agent');
+      return;
+    }
+
+    this.logger.log(
+      `Prepared ${chatMessages.length} chat messages for AI Agent`,
+    );
+
+    // Prepare request body
+    const requestBody: HandleEventDto = {
+      messages: chatMessages,
+    };
+
+    const url = `${baseUrl}/agent/handle-event`;
+    this.logger.log(`Sending chat context to AI Agent: ${url}`);
+
+    // Send to AI Agent
+    const response = await axios.post(url, requestBody, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      timeout: 10000, // 10 seconds timeout
+    });
+
+    this.logger.log(
+      `AI Agent response received - Status: ${response.status}`,
+    );
+    this.logger.debug(`AI Agent response data:`, response.data);
   }
 }
 
