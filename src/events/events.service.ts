@@ -22,7 +22,7 @@ export class EventsService {
         .eq('id', Number(leadId))
         .single()
 
-      if (lead?.pipeline_stages?.pipelines?.whatsapp_phone_number_id && lead?.phone_number) {
+      if (!lead?.pipeline_stages?.pipelines?.whatsapp_phone_number_id || !lead?.phone_number) {
         this.logger.error('Missing phoneNumberId or phoneNumber in lead', lead);
         return {
           status: 'error',
