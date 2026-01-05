@@ -36,8 +36,7 @@ export class LeadsService {
       this.logger.log('Email:', email);
       this.logger.log('Whatsapp Conversation ID:', whatsappConversationId);
       this.logger.log('=== END WEBHOOK DATA ===');
-      const parsedBody = JSON.parse(body);
-      for (const entry of Object.entries(parsedBody)) {
+      for (const entry of Object.entries(body)) {
         const [key, value] = entry;
         this.logger.log(`${key}: ${value}`);
       }
