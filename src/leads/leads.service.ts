@@ -249,7 +249,9 @@ export class LeadsService {
 
       this.logger.log(`Sending POST request with body:`, dummyBody);
 
-      const response = await axios.post(baseUrl, dummyBody, {
+      const url = baseUrl + "/agent/handle-event";
+
+      const response = await axios.post(url, dummyBody, {
         headers: {
           'Content-Type': 'application/json',
         },
