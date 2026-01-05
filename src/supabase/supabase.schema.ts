@@ -112,6 +112,7 @@ export type Database = {
       }
       pipeline_stages: {
         Row: {
+          ai_prompt: string | null
           business_id: number
           color: string
           created_at: string
@@ -124,6 +125,7 @@ export type Database = {
           pipeline_id: number
         }
         Insert: {
+          ai_prompt?: string | null
           business_id: number
           color: string
           created_at?: string
@@ -136,6 +138,7 @@ export type Database = {
           pipeline_id: number
         }
         Update: {
+          ai_prompt?: string | null
           business_id?: number
           color?: string
           created_at?: string
@@ -363,10 +366,10 @@ export type Database = {
           applied_tax: number
           business_id: number
           created_at: string
-          lead_id: number | null
           id: number
           is_active: boolean
           is_open: boolean
+          lead_id: number | null
           order_number: number
           subtotal: number
           total: number
@@ -375,22 +378,22 @@ export type Database = {
           applied_tax?: number
           business_id: number
           created_at?: string
-          lead_id?: number | null
           id?: number
           is_active?: boolean
           is_open?: boolean
+          lead_id?: number | null
           order_number: number
-          subtotal: number
-          total: number
+          subtotal?: number
+          total?: number
         }
         Update: {
           applied_tax?: number
           business_id?: number
           created_at?: string
-          lead_id?: number | null
           id?: number
           is_active?: boolean
           is_open?: boolean
+          lead_id?: number | null
           order_number?: number
           subtotal?: number
           total?: number
@@ -444,7 +447,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_api_keys_view: {
+        Row: {
+          created_at: string | null
+          id: number | null
+          is_active: boolean | null
+          key: string | null
+          key_index: number | null
+          last_rotated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number | null
+          is_active?: boolean | null
+          key?: never
+          key_index?: number | null
+          last_rotated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number | null
+          is_active?: boolean | null
+          key?: never
+          key_index?: number | null
+          last_rotated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_secure_key: { Args: never; Returns: string }
@@ -490,6 +522,7 @@ export type Database = {
         Args: { p_business_id: number }
         Returns: number
       }
+      get_user_api_key: { Args: { p_key_index: number }; Returns: string }
       initialize_api_keys: { Args: never; Returns: boolean }
       process_sale: {
         Args: { applied_tax: number; cart_items: Json; p_business_id: number }
@@ -500,10 +533,9 @@ export type Database = {
           total: number
         }[]
       }
-      rotate_user_api_key: {
-        Args: { p_key_index: number; p_user_id: string }
-        Returns: string
-      }
+      rotate_user_api_key:
+        | { Args: { p_key_index: number }; Returns: string }
+        | { Args: { p_key_index: number; p_user_id: string }; Returns: string }
       validate_user_business_access: {
         Args: { p_business_id: number }
         Returns: boolean

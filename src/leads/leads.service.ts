@@ -100,21 +100,27 @@ export class LeadsService {
         };
       }
 
-      let leadId: number | null = null;
+      let aiInfo: {
+        leadId: number,
+        currentStageAiPrompt: string,
+      } = { leadId: 0, currentStageAiPrompt: '' };
 
       if (count && count > 0) {
         this.logger.log(`Existing opened lead found. Count: ${count}`);
         // Get the existing lead ID for logging purposes
         const { data: existingLead } = await supabase
           .from('pipeline_stage_leads')
-          .select('id')
+          .select('id, pipeline_stages(ai_prompt)')
           .eq('phone_number', phoneNumber)
           .is('closed_at', null)
           .limit(1)
           .single();
         
         if (existingLead) {
-          leadId = existingLead.id;
+          aiInfo = {
+            leadId: existingLead.id,
+            currentStageAiPrompt: existingLead.pipeline_stages?.ai_prompt ?? '',
+          };
         }
       } else {
         this.logger.log('Creating new lead...');
@@ -134,7 +140,7 @@ export class LeadsService {
         const { data: lead, error: leadError } = await supabase
           .from('pipeline_stage_leads')
           .insert(leadData)
-          .select()
+          .select('id, pipeline_stages(ai_prompt)')
           .single();
 
         if (leadError || !lead) {
@@ -148,7 +154,10 @@ export class LeadsService {
         }
 
         this.logger.log(`Lead created successfully: ${lead.id}`);
-        leadId = lead.id;
+        aiInfo = {
+          leadId: lead.id,
+          currentStageAiPrompt: lead.pipeline_stages?.ai_prompt ?? '',
+        };
       }
 
       // Always send chat context to AI Agent (for both new and existing leads)
@@ -157,12 +166,12 @@ export class LeadsService {
           phoneNumberId,
           phoneNumber,
           whatsappConversationId,
-          leadId ?? 0,
+          aiInfo,
         );
       } catch (aiError) {
         // Log error but don't fail the webhook processing
         this.logger.error(
-          `Error sending chat context to AI Agent${leadId ? ` for lead ${leadId}` : ''}:`,
+          `Error sending chat context to AI Agent${aiInfo.leadId ? ` for lead ${aiInfo.leadId}` : ''}:`,
           aiError,
         );
       }
@@ -172,7 +181,7 @@ export class LeadsService {
           status: 'skipped',
           message: 'Opened lead already exists for this phone number',
           count,
-          lead_id: leadId,
+          lead_id: aiInfo.leadId,
           timestamp: new Date().toISOString(),
         };
       }
@@ -180,7 +189,7 @@ export class LeadsService {
       return {
         status: 'success',
         message: 'Webhook processed and lead created',
-        lead_id: leadId,
+        lead_id: aiInfo.leadId,
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
@@ -267,7 +276,10 @@ export class LeadsService {
     phoneNumberId: string,
     phoneNumber: string,
     conversationId: string | null,
-    leadId: number,
+    agentInfo: {
+      leadId: number,
+      currentStageAiPrompt: string,
+    },
   ): Promise<void> {
     const baseUrl = this.configService.get<string>('AI_AGENT_BASE_URL');
 
@@ -337,7 +349,8 @@ export class LeadsService {
     // Prepare request body
     const requestBody: HandleEventDto = {
       messages: chatMessages,
-      leadId,
+      leadId: agentInfo.leadId,
+      currentStageAiPrompt: agentInfo.currentStageAiPrompt,
     };
 
     const url = `${baseUrl}/agent/handle-event`;
