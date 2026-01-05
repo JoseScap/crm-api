@@ -100,49 +100,58 @@ export class LeadsService {
         };
       }
 
+      let leadId: number | null = null;
+
       if (count && count > 0) {
         this.logger.log(`Existing opened lead found. Count: ${count}`);
-        return {
-          status: 'skipped',
-          message: 'Opened lead already exists for this phone number',
-          count,
-          timestamp: new Date().toISOString(),
+        // Get the existing lead ID for logging purposes
+        const { data: existingLead } = await supabase
+          .from('pipeline_stage_leads')
+          .select('id')
+          .eq('phone_number', phoneNumber)
+          .is('closed_at', null)
+          .limit(1)
+          .single();
+        
+        if (existingLead) {
+          leadId = existingLead.id;
+        }
+      } else {
+        this.logger.log('Creating new lead...');
+        // Create new lead
+        const leadData: TablesInsert<'pipeline_stage_leads'> = {
+          customer_name: customerName,
+          phone_number: phoneNumber,
+          email: email,
+          pipeline_stage_id: stage.id,
+          value: 0,
+          whatsapp_conversation_id: whatsappConversationId,
+          business_id: stage.business_id,
         };
+
+        this.logger.log('Inserting new lead...', leadData);
+
+        const { data: lead, error: leadError } = await supabase
+          .from('pipeline_stage_leads')
+          .insert(leadData)
+          .select()
+          .single();
+
+        if (leadError || !lead) {
+          this.logger.error('Error creating lead', leadError);
+          return {
+            status: 'error',
+            message: 'Failed to create lead',
+            error: leadError?.message,
+            timestamp: new Date().toISOString(),
+          };
+        }
+
+        this.logger.log(`Lead created successfully: ${lead.id}`);
+        leadId = lead.id;
       }
 
-      this.logger.log('Creating new lead...');
-      // Create new lead
-      const leadData: TablesInsert<'pipeline_stage_leads'> = {
-        customer_name: customerName,
-        phone_number: phoneNumber,
-        email: email,
-        pipeline_stage_id: stage.id,
-        value: 0,
-        whatsapp_conversation_id: whatsappConversationId,
-        business_id: stage.business_id,
-      };
-
-      this.logger.log('Inserting new lead...', leadData);
-
-      const { data: lead, error: leadError } = await supabase
-        .from('pipeline_stage_leads')
-        .insert(leadData)
-        .select()
-        .single();
-
-      if (leadError || !lead) {
-        this.logger.error('Error creating lead', leadError);
-        return {
-          status: 'error',
-          message: 'Failed to create lead',
-          error: leadError?.message,
-          timestamp: new Date().toISOString(),
-        };
-      }
-
-      this.logger.log(`Lead created successfully: ${lead.id}`);
-
-      // Get last 10 messages from the chat and send to AI Agent
+      // Always send chat context to AI Agent (for both new and existing leads)
       try {
         await this.sendChatContextToAiAgent(
           phoneNumberId,
@@ -152,15 +161,25 @@ export class LeadsService {
       } catch (aiError) {
         // Log error but don't fail the webhook processing
         this.logger.error(
-          `Error sending chat context to AI Agent for lead ${lead.id}:`,
+          `Error sending chat context to AI Agent${leadId ? ` for lead ${leadId}` : ''}:`,
           aiError,
         );
+      }
+
+      if (count && count > 0) {
+        return {
+          status: 'skipped',
+          message: 'Opened lead already exists for this phone number',
+          count,
+          lead_id: leadId,
+          timestamp: new Date().toISOString(),
+        };
       }
 
       return {
         status: 'success',
         message: 'Webhook processed and lead created',
-        lead_id: lead.id,
+        lead_id: leadId,
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
