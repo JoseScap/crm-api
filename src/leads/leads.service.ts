@@ -157,6 +157,7 @@ export class LeadsService {
           phoneNumberId,
           phoneNumber,
           whatsappConversationId,
+          leadId ?? 0,
         );
       } catch (aiError) {
         // Log error but don't fail the webhook processing
@@ -266,6 +267,7 @@ export class LeadsService {
     phoneNumberId: string,
     phoneNumber: string,
     conversationId: string | null,
+    leadId: number,
   ): Promise<void> {
     const baseUrl = this.configService.get<string>('AI_AGENT_BASE_URL');
 
@@ -335,58 +337,26 @@ export class LeadsService {
     // Prepare request body
     const requestBody: HandleEventDto = {
       messages: chatMessages,
+      leadId,
     };
 
     const url = `${baseUrl}/agent/handle-event`;
     this.logger.log(`Sending chat context to AI Agent: ${url}`);
 
-    // Send to AI Agent
-    const response = await axios.post(url, requestBody, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      timeout: 10000, // 10 seconds timeout
-    });
-
-    this.logger.log(
-      `AI Agent response received - Status: ${response.status}`,
-    );
-    this.logger.debug(`AI Agent response data:`, response.data);
-
-    // Extract the response message from AI Agent
-    const aiResponseMessage = response.data?.response;
-    
-    if (!aiResponseMessage || typeof aiResponseMessage !== 'string') {
-      this.logger.warn(
-        'AI Agent did not return a valid response message',
-        response.data,
-      );
-      return;
-    }
-
-    this.logger.log(
-      `AI Agent generated response message (length: ${aiResponseMessage.length})`,
-    );
-
-    // Send the AI Agent response via WhatsApp
+    // Send to AI Agent (fire and forget - response will come via webhook)
     try {
-      await this.whatsappService.sendMessage(
-        phoneNumberId,
-        phoneNumber,
-        {
-          body: aiResponseMessage,
-          preview_url: false,
+      await axios.post(url, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        timeout: 10000, // 10 seconds timeout
+      });
 
       this.logger.log(
-        `Successfully sent AI Agent response to ${phoneNumber} via WhatsApp`,
+        `Chat context sent to AI Agent successfully. Waiting for webhook callback.`,
       );
-    } catch (whatsappError) {
-      this.logger.error(
-        `Error sending AI Agent response via WhatsApp:`,
-        whatsappError,
-      );
+    } catch (error) {
+      this.logger.error('Error sending chat context to AI Agent:', error);
       // Don't throw, just log the error
     }
   }

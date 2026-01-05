@@ -6,7 +6,7 @@ import { SupabaseModule } from './supabase/supabase.module';
 import { LeadsModule } from './leads/leads.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { CacheModule } from './cache/cache.module';
-
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -18,6 +18,7 @@ import { CacheModule } from './cache/cache.module';
     CacheModule,
     LeadsModule,
     WhatsappModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

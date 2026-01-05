@@ -6,6 +6,7 @@ export interface ChatMessage {
 }
 
 export interface HandleEventDto {
+  leadId: number;
   messages: ChatMessage[];
 }
 
