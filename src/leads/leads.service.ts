@@ -43,7 +43,7 @@ export class LeadsService {
       const supabase = this.supabaseService.getClient();
       const { data: pipeline, error: pipelineError } = await supabase
         .from('pipelines')
-        .select('id')
+        .select('id, business_id')
         .eq('whatsapp_is_enabled', true)
         .eq('whatsapp_phone_number_id', phoneNumberId)
         .single();
@@ -56,7 +56,22 @@ export class LeadsService {
           timestamp: new Date().toISOString(),
         };
       }
+
+      const { data: business, error: businessError } = await supabase
+        .from('businesses')
+        .select('id, ai_context')
+        .eq('id', pipeline.business_id)
+        .single();
       
+      if (businessError || !business) {
+        this.logger.warn(`Business not found for pipeline: ${pipeline.id}`, businessError);
+        return {
+          status: 'error',
+          message: 'Business not found',
+          timestamp: new Date().toISOString(),
+        };
+      }
+
       this.logger.log('Pipeline found:', pipeline);
 
       this.logger.log('Finding input stage for pipeline...');
@@ -103,7 +118,8 @@ export class LeadsService {
       let aiInfo: {
         leadId: number,
         currentStageAiPrompt: string,
-      } = { leadId: 0, currentStageAiPrompt: '' };
+        businessAiContext: string,
+      } = { leadId: 0, currentStageAiPrompt: '', businessAiContext: '' };
 
       if (count && count > 0) {
         this.logger.log(`Existing opened lead found. Count: ${count}`);
@@ -118,6 +134,7 @@ export class LeadsService {
         
         if (existingLead) {
           aiInfo = {
+            businessAiContext: business.ai_context ?? '',
             leadId: existingLead.id,
             currentStageAiPrompt: existingLead.pipeline_stages?.ai_prompt ?? '',
           };
@@ -157,6 +174,7 @@ export class LeadsService {
         aiInfo = {
           leadId: lead.id,
           currentStageAiPrompt: lead.pipeline_stages?.ai_prompt ?? '',
+          businessAiContext: business.ai_context ?? '',
         };
       }
 
@@ -277,6 +295,7 @@ export class LeadsService {
     phoneNumber: string,
     conversationId: string | null,
     agentInfo: {
+      businessAiContext: string,
       leadId: number,
       currentStageAiPrompt: string,
     },
@@ -348,6 +367,7 @@ export class LeadsService {
 
     // Prepare request body
     const requestBody: HandleEventDto = {
+      businessAiContext: agentInfo.businessAiContext,
       messages: chatMessages,
       leadId: agentInfo.leadId,
       currentStageAiPrompt: agentInfo.currentStageAiPrompt,
