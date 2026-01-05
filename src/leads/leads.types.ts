@@ -1,14 +1,8 @@
-export type MessageType = 'customer' | 'salesperson';
-
-export interface ChatMessage {
-  type: MessageType;
-  message: string;
+export interface WhatsappWebhookRequest {
+  body: any;
+  headers: any;
+  query: any;
+  method: string;
+  url: string;
+  path: string;
 }
-
-export interface HandleEventDto {
-  leadId: number;
-  messages: ChatMessage[];
-  businessAiContext: string;
-  currentStageAiContext: string;
-}
-

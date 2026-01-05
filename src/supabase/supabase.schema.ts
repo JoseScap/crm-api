@@ -17,7 +17,6 @@ export type Database = {
       businesses: {
         Row: {
           address: string | null
-          ai_context: string | null
           created_at: string
           description: string | null
           email: string | null
@@ -29,7 +28,6 @@ export type Database = {
         }
         Insert: {
           address?: string | null
-          ai_context?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -41,7 +39,6 @@ export type Database = {
         }
         Update: {
           address?: string | null
-          ai_context?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -115,7 +112,6 @@ export type Database = {
       }
       pipeline_stages: {
         Row: {
-          ai_context: string | null
           business_id: number
           color: string
           created_at: string
@@ -126,9 +122,9 @@ export type Database = {
           name: string
           order: number
           pipeline_id: number
+          webhook_url: string | null
         }
         Insert: {
-          ai_context?: string | null
           business_id: number
           color: string
           created_at?: string
@@ -139,9 +135,9 @@ export type Database = {
           name: string
           order: number
           pipeline_id: number
+          webhook_url?: string | null
         }
         Update: {
-          ai_context?: string | null
           business_id?: number
           color?: string
           created_at?: string
@@ -152,6 +148,7 @@ export type Database = {
           name?: string
           order?: number
           pipeline_id?: number
+          webhook_url?: string | null
         }
         Relationships: [
           {

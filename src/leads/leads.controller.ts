@@ -27,20 +27,20 @@ export class LeadsController {
     encoding: 'hex',
   })
   @UseGuards(SignatureGuard)
-  async webhook(
+  async handleWhatsappWebhook(
     @Body() body: any,
     @Headers() headers: any,
     @Query() query: any,
     @Req() request: any,
   ) {
-    return this.leadsService.handleWebhook(
+    return this.leadsService.handleWhatsappWebhook({
       body,
       headers,
       query,
-      request.method,
-      request.url,
-      request.path,
-    );
+      method: request.method,
+      url: request.url,
+      path: request.path,
+    });
   }
 
   @Get('whatsapp/messages/:phoneNumberId')
