@@ -67,8 +67,8 @@ export class EventsService {
       // Send the AI Agent response via WhatsApp
       try {
         await this.whatsappService.sendMessage(
-          lead?.pipeline_stages?.pipelines?.whatsapp_phone_number_id ?? '',
-          lead?.phone_number ?? '',
+          lead.pipeline_stages.pipelines.whatsapp_phone_number_id,
+          lead.phone_number,
           {
             body: responseMessage,
             preview_url: false,
@@ -76,7 +76,7 @@ export class EventsService {
         );
 
         this.logger.log(
-          `Successfully sent AI Agent response to ${lead?.phone_number} via WhatsApp`,
+          `Successfully sent AI Agent response to ${lead.phone_number} via WhatsApp`,
         );
 
         return {
