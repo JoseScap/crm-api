@@ -24,23 +24,6 @@ export class LeadsService {
       const email = conversation?.email || null;
       const whatsappConversationId = conversation?.id || null;
 
-      this.logger.log('=== WEBHOOK RECEIVED ===');
-      this.logger.log('Timestamp:', new Date().toISOString());
-      this.logger.log('Method:', method);
-      this.logger.log('URL:', url);
-      this.logger.log('Path:', path);
-      this.logger.log('Phone Number ID:', phoneNumberId);
-      this.logger.log('Conversation:', conversation);
-      this.logger.log('Customer Name:', customerName);
-      this.logger.log('Phone Number:', phoneNumber);
-      this.logger.log('Email:', email);
-      this.logger.log('Whatsapp Conversation ID:', whatsappConversationId);
-      this.logger.log('=== END WEBHOOK DATA ===');
-      for (const entry of Object.entries(body)) {
-        const [key, value] = entry;
-        this.logger.log(`${key}: ${value}`);
-      }
-
       if (!phoneNumberId) {
         this.logger.warn('Missing phone_number_id in webhook body');
         return {
