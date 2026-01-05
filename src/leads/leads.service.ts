@@ -375,6 +375,7 @@ export class LeadsService {
 
     const url = `${baseUrl}/agent/handle-event`;
     this.logger.log(`Sending chat context to AI Agent: ${url}`);
+    this.logger.log('Request body:', requestBody);
 
     // Send to AI Agent (fire and forget - response will come via webhook)
     try {
