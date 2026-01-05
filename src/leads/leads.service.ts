@@ -333,6 +333,43 @@ export class LeadsService {
       `AI Agent response received - Status: ${response.status}`,
     );
     this.logger.debug(`AI Agent response data:`, response.data);
+
+    // Extract the response message from AI Agent
+    const aiResponseMessage = response.data?.response;
+    
+    if (!aiResponseMessage || typeof aiResponseMessage !== 'string') {
+      this.logger.warn(
+        'AI Agent did not return a valid response message',
+        response.data,
+      );
+      return;
+    }
+
+    this.logger.log(
+      `AI Agent generated response message (length: ${aiResponseMessage.length})`,
+    );
+
+    // Send the AI Agent response via WhatsApp
+    try {
+      await this.whatsappService.sendMessage(
+        phoneNumberId,
+        phoneNumber,
+        {
+          body: aiResponseMessage,
+          preview_url: false,
+        },
+      );
+
+      this.logger.log(
+        `Successfully sent AI Agent response to ${phoneNumber} via WhatsApp`,
+      );
+    } catch (whatsappError) {
+      this.logger.error(
+        `Error sending AI Agent response via WhatsApp:`,
+        whatsappError,
+      );
+      // Don't throw, just log the error
+    }
   }
 }
 
