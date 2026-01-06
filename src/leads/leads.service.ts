@@ -70,7 +70,7 @@ export class LeadsService {
       // Get related stages (previous and next)
       const { previousStages, nextStages } = await this.getRelatedStages(
         pipeline.id,
-        stage.order,
+        stage.position,
       );
 
       // Send webhook data if webhook_url is configured (fire and forget)
@@ -277,31 +277,31 @@ export class LeadsService {
 
   private async getRelatedStages(
     pipelineId: number,
-    currentOrder: number,
+    currentPosition: number,
   ): Promise<{
     previousStages: Tables<'pipeline_stages'>[];
     nextStages: Tables<'pipeline_stages'>[];
   }> {
     this.logger.log(
-      `Getting related stages for pipeline ${pipelineId} with order ${currentOrder}`,
+      `Getting related stages for pipeline ${pipelineId} with order ${currentPosition}`,
     );
     const supabase = this.supabaseService.getClient();
 
     // Get previous and next stages in parallel
     const [previousResult, nextResult] = await Promise.all([
-      // Previous stages: order < currentOrder
+      // Previous stages: order < currentPosition
       supabase
         .from('pipeline_stages')
         .select('*')
         .eq('pipeline_id', pipelineId)
-        .lt('order', currentOrder)
+        .lt('position', currentPosition)
         .order('order', { ascending: false }),
-      // Next stages: order > currentOrder
+      // Next stages: order > currentPosition
       supabase
         .from('pipeline_stages')
         .select('*')
         .eq('pipeline_id', pipelineId)
-        .gt('order', currentOrder)
+        .gt('position', currentPosition)
         .order('order', { ascending: true }),
     ]);
 

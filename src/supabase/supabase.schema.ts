@@ -121,8 +121,8 @@ export type Database = {
           is_input: boolean
           is_revenue: boolean
           name: string
-          order: number
           pipeline_id: number
+          position: number
           webhook_url: string | null
         }
         Insert: {
@@ -135,8 +135,8 @@ export type Database = {
           is_input?: boolean
           is_revenue?: boolean
           name: string
-          order: number
           pipeline_id: number
+          position: number
           webhook_url?: string | null
         }
         Update: {
@@ -149,8 +149,8 @@ export type Database = {
           is_input?: boolean
           is_revenue?: boolean
           name?: string
-          order?: number
           pipeline_id?: number
+          position?: number
           webhook_url?: string | null
         }
         Relationships: [
