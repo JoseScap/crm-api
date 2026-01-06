@@ -289,20 +289,20 @@ export class LeadsService {
 
     // Get previous and next stages in parallel
     const [previousResult, nextResult] = await Promise.all([
-      // Previous stages: order < currentPosition
+      // Previous stages: position < currentPosition
       supabase
         .from('pipeline_stages')
         .select('*')
         .eq('pipeline_id', pipelineId)
         .lt('position', currentPosition)
-        .order('order', { ascending: false }),
-      // Next stages: order > currentPosition
+        .order('position', { ascending: false }),
+      // Next stages: position > currentPosition
       supabase
         .from('pipeline_stages')
         .select('*')
         .eq('pipeline_id', pipelineId)
         .gt('position', currentPosition)
-        .order('order', { ascending: true }),
+        .order('position', { ascending: true }),
     ]);
 
     const previousStages = previousResult.data || [];
