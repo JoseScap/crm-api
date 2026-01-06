@@ -5,6 +5,8 @@ import {
   ReplyWhatsappMessageDto,
   ReplyWhatsappMessageResponse,
   LeadWithPipeline,
+  ChangeLeadStageDto,
+  ChangeLeadStageResponse,
 } from './webhooks.types';
 
 @Injectable()
@@ -177,6 +179,116 @@ export class IncomingWebhooksService {
           whatsappError instanceof Error
             ? whatsappError.message
             : 'Unknown error',
+      };
+    }
+  }
+
+  async changeLeadStage(
+    dto: ChangeLeadStageDto,
+  ): Promise<ChangeLeadStageResponse> {
+    try {
+      // Validate input
+      if (!dto.leadId || typeof dto.leadId !== 'number') {
+        this.logger.warn('Invalid leadId format', dto);
+        return {
+          status: 'error',
+          message: 'Invalid leadId format',
+        };
+      }
+
+      if (!dto.newPipelineStageId || typeof dto.newPipelineStageId !== 'number') {
+        this.logger.warn('Invalid newPipelineStageId format', dto);
+        return {
+          status: 'error',
+          message: 'Invalid newPipelineStageId format',
+        };
+      }
+
+      this.logger.log(
+        `Changing stage for lead ${dto.leadId} to stage ${dto.newPipelineStageId}`,
+      );
+
+      // Verify lead exists
+      const supabase = this.supabaseService.getClient();
+      const { data: existingLead, error: leadCheckError } = await supabase
+        .from('pipeline_stage_leads')
+        .select('id, pipeline_stage_id')
+        .eq('id', dto.leadId)
+        .single();
+
+      if (leadCheckError || !existingLead) {
+        this.logger.warn(`Lead ${dto.leadId} not found`, leadCheckError);
+        return {
+          status: 'error',
+          message: 'Lead not found',
+          error: leadCheckError?.message,
+        };
+      }
+
+      // Verify new stage exists
+      const { data: newStage, error: stageCheckError } = await supabase
+        .from('pipeline_stages')
+        .select('id')
+        .eq('id', dto.newPipelineStageId)
+        .single();
+
+      if (stageCheckError || !newStage) {
+        this.logger.warn(
+          `Stage ${dto.newPipelineStageId} not found`,
+          stageCheckError,
+        );
+        return {
+          status: 'error',
+          message: 'New pipeline stage not found',
+          error: stageCheckError?.message,
+        };
+      }
+
+      // Check if lead is already in the target stage
+      if (existingLead.pipeline_stage_id === dto.newPipelineStageId) {
+        this.logger.log(
+          `Lead ${dto.leadId} is already in stage ${dto.newPipelineStageId}`,
+        );
+        return {
+          status: 'success',
+          message: 'Lead is already in the target stage',
+        };
+      }
+
+      // Update lead stage
+      const { data: updatedLead, error: updateError } = await supabase
+        .from('pipeline_stage_leads')
+        .update({ pipeline_stage_id: dto.newPipelineStageId })
+        .eq('id', dto.leadId)
+        .select('id, pipeline_stage_id')
+        .single();
+
+      if (updateError || !updatedLead) {
+        this.logger.error(
+          `Error updating lead ${dto.leadId} stage`,
+          updateError,
+        );
+        return {
+          status: 'error',
+          message: 'Failed to update lead stage',
+          error: updateError?.message,
+        };
+      }
+
+      this.logger.log(
+        `Successfully changed lead ${dto.leadId} from stage ${existingLead.pipeline_stage_id} to stage ${dto.newPipelineStageId}`,
+      );
+
+      return {
+        status: 'success',
+        message: 'Lead stage updated successfully',
+      };
+    } catch (error) {
+      this.logger.error('Error changing lead stage:', error);
+      return {
+        status: 'error',
+        message: 'Failed to change lead stage',
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }

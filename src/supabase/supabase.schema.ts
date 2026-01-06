@@ -115,6 +115,7 @@ export type Database = {
           business_id: number
           color: string
           created_at: string
+          description: string | null
           id: number
           is_active: boolean
           is_input: boolean
@@ -128,6 +129,7 @@ export type Database = {
           business_id: number
           color: string
           created_at?: string
+          description?: string | null
           id?: number
           is_active?: boolean
           is_input?: boolean
@@ -141,6 +143,7 @@ export type Database = {
           business_id?: number
           color?: string
           created_at?: string
+          description?: string | null
           id?: number
           is_active?: boolean
           is_input?: boolean

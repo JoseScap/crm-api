@@ -25,3 +25,14 @@ export interface LeadWithPipeline {
   };
 }
 
+export interface ChangeLeadStageDto {
+  leadId: number;
+  newPipelineStageId: number;
+}
+
+export interface ChangeLeadStageResponse {
+  status: 'success' | 'error';
+  message: string;
+  error?: string;
+}
+
