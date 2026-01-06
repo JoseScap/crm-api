@@ -283,7 +283,7 @@ export class LeadsService {
     nextStages: Tables<'pipeline_stages'>[];
   }> {
     this.logger.log(
-      `Getting related stages for pipeline ${pipelineId} with order ${currentPosition}`,
+      `Getting related stages for pipeline ${pipelineId} with position ${currentPosition}`,
     );
     const supabase = this.supabaseService.getClient();
 
