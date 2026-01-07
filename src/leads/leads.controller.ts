@@ -10,7 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { LeadsService } from './leads.service';
-import { ApiKeyGuard } from '../auth/api-key.guard';
 import { SignatureGuard, UseSignature } from '../auth/signature.guard';
 import { knownSignatureConfigs } from 'src/auth/signature.config';
 
@@ -19,7 +18,6 @@ export class LeadsController {
   constructor(private readonly leadsService: LeadsService) {}
 
   @Post('whatsapp/webhook/message-received')
-  @UseGuards(ApiKeyGuard)
   @UseSignature({
     secretKeyEnvVar: knownSignatureConfigs.KAPSO_WEBHOOK.secretEnvVar,
     headerNameEnvVar: knownSignatureConfigs.KAPSO_WEBHOOK.headerEnvVar,

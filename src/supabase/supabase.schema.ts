@@ -14,6 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_employee_oauth_connections: {
+        Row: {
+          access_token: string
+          application_id: string
+          business_employee_id: number
+          business_id: number
+          created_at: string
+          id: number
+          provider_email: string | null
+          provider_user_id: string | null
+          refresh_token: string | null
+          scope: string | null
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          application_id: string
+          business_employee_id: number
+          business_id: number
+          created_at?: string
+          id?: number
+          provider_email?: string | null
+          provider_user_id?: string | null
+          refresh_token?: string | null
+          scope?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          application_id?: string
+          business_employee_id?: number
+          business_id?: number
+          created_at?: string
+          id?: number
+          provider_email?: string | null
+          provider_user_id?: string | null
+          refresh_token?: string | null
+          scope?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_employee_oauth_connections_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_employee_oauth_connections_employee_id_fkey"
+            columns: ["business_employee_id"]
+            isOneToOne: false
+            referencedRelation: "business_employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_employees: {
+        Row: {
+          business_id: number
+          created_at: string
+          email: string
+          employee_type: Database["public"]["Enums"]["business_employee_type"]
+          id: number
+          is_active: boolean
+          user_id: string
+        }
+        Insert: {
+          business_id: number
+          created_at?: string
+          email: string
+          employee_type: Database["public"]["Enums"]["business_employee_type"]
+          id?: number
+          is_active?: boolean
+          user_id: string
+        }
+        Update: {
+          business_id?: number
+          created_at?: string
+          email?: string
+          employee_type?: Database["public"]["Enums"]["business_employee_type"]
+          id?: number
+          is_active?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_employees_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       businesses: {
         Row: {
           address: string | null
@@ -52,6 +153,7 @@ export type Database = {
       }
       pipeline_stage_leads: {
         Row: {
+          business_employee_id: number | null
           business_id: number
           closed_at: string | null
           created_at: string
@@ -66,6 +168,7 @@ export type Database = {
           whatsapp_conversation_id: string | null
         }
         Insert: {
+          business_employee_id?: number | null
           business_id: number
           closed_at?: string | null
           created_at?: string
@@ -80,6 +183,7 @@ export type Database = {
           whatsapp_conversation_id?: string | null
         }
         Update: {
+          business_employee_id?: number | null
           business_id?: number
           closed_at?: string | null
           created_at?: string
@@ -94,6 +198,13 @@ export type Database = {
           whatsapp_conversation_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "pipeline_stage_leads_business_employee_id_fkey"
+            columns: ["business_employee_id"]
+            isOneToOne: false
+            referencedRelation: "business_employees"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pipeline_stage_leads_business_id_fkey"
             columns: ["business_id"]
@@ -418,134 +529,42 @@ export type Database = {
           },
         ]
       }
-      user_api_keys: {
-        Row: {
-          created_at: string
-          id: number
-          is_active: boolean
-          key: string
-          key_index: number
-          last_rotated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          is_active?: boolean
-          key: string
-          key_index: number
-          last_rotated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          is_active?: boolean
-          key?: string
-          key_index?: number
-          last_rotated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
-      user_api_keys_view: {
-        Row: {
-          created_at: string | null
-          id: number | null
-          is_active: boolean | null
-          key: string | null
-          key_index: number | null
-          last_rotated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: number | null
-          is_active?: boolean | null
-          key?: never
-          key_index?: number | null
-          last_rotated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: number | null
-          is_active?: boolean | null
-          key?: never
-          key_index?: number | null
-          last_rotated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
-      generate_secure_key: { Args: never; Returns: string }
-      generate_user_api_keys: {
-        Args: { p_user_id: string }
+      activate_business_employee: {
+        Args: { p_business_id: number; p_user_id: string }
         Returns: undefined
       }
-      get_products_low_stock: {
-        Args: { p_business_id: number }
-        Returns: {
-          business_id: number
-          created_at: string
-          id: number
-          is_active: boolean
-          minimum_stock: number
-          name: string
-          price: number
-          product_category_id: number
-          sku: string
-          stock: number
-        }[]
+      add_business_employee: {
+        Args: { p_business_id: number; p_user_email: string }
+        Returns: undefined
       }
-      get_products_low_stock_total: {
-        Args: { p_business_id: number }
-        Returns: number
+      create_new_business: {
+        Args: {
+          p_address: string
+          p_description: string
+          p_email: string
+          p_name: string
+          p_phone: string
+        }
+        Returns: undefined
       }
-      get_products_out_of_stock: {
-        Args: { p_business_id: number }
-        Returns: {
-          business_id: number
-          created_at: string
-          id: number
-          is_active: boolean
-          minimum_stock: number
-          name: string
-          price: number
-          product_category_id: number
-          sku: string
-          stock: number
-        }[]
+      deactivate_business_employee: {
+        Args: { p_business_id: number; p_user_id: string }
+        Returns: undefined
       }
-      get_products_out_of_stock_total: {
+      get_my_business_employee_id_by_business: {
         Args: { p_business_id: number }
         Returns: number
       }
-      get_user_api_key: { Args: { p_key_index: number }; Returns: string }
-      initialize_api_keys: { Args: never; Returns: boolean }
-      process_sale: {
-        Args: { applied_tax: number; cart_items: Json; p_business_id: number }
-        Returns: {
-          applied_tax_result: number
-          order_number: number
-          subtotal: number
-          total: number
-        }[]
-      }
-      rotate_user_api_key:
-        | { Args: { p_key_index: number }; Returns: string }
-        | { Args: { p_key_index: number; p_user_id: string }; Returns: string }
-      validate_user_business_access: {
-        Args: { p_business_id: number }
-        Returns: boolean
-      }
+      is_business_member: { Args: { p_business_id: number }; Returns: boolean }
+      is_business_owner: { Args: { p_business_id: number }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      business_employee_type: "owner" | "salesperson"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -672,6 +691,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      business_employee_type: ["owner", "salesperson"],
+    },
   },
 } as const
