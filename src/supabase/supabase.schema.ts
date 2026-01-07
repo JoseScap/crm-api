@@ -83,8 +83,10 @@ export type Database = {
           created_at: string
           email: string
           employee_type: Database["public"]["Enums"]["business_employee_type"]
+          first_name: string | null
           id: number
           is_active: boolean
+          last_name: string | null
           user_id: string
         }
         Insert: {
@@ -92,8 +94,10 @@ export type Database = {
           created_at?: string
           email: string
           employee_type: Database["public"]["Enums"]["business_employee_type"]
+          first_name?: string | null
           id?: number
           is_active?: boolean
+          last_name?: string | null
           user_id: string
         }
         Update: {
@@ -101,8 +105,10 @@ export type Database = {
           created_at?: string
           email?: string
           employee_type?: Database["public"]["Enums"]["business_employee_type"]
+          first_name?: string | null
           id?: number
           is_active?: boolean
+          last_name?: string | null
           user_id?: string
         }
         Relationships: [
@@ -226,6 +232,7 @@ export type Database = {
           business_id: number
           color: string
           created_at: string
+          default_business_employee_id: number | null
           description: string | null
           id: number
           is_active: boolean
@@ -240,6 +247,7 @@ export type Database = {
           business_id: number
           color: string
           created_at?: string
+          default_business_employee_id?: number | null
           description?: string | null
           id?: number
           is_active?: boolean
@@ -254,6 +262,7 @@ export type Database = {
           business_id?: number
           color?: string
           created_at?: string
+          default_business_employee_id?: number | null
           description?: string | null
           id?: number
           is_active?: boolean
@@ -270,6 +279,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipeline_stages_default_business_employee_id_fkey"
+            columns: ["default_business_employee_id"]
+            isOneToOne: false
+            referencedRelation: "business_employees"
             referencedColumns: ["id"]
           },
           {
@@ -539,7 +555,12 @@ export type Database = {
         Returns: undefined
       }
       add_business_employee: {
-        Args: { p_business_id: number; p_user_email: string }
+        Args: {
+          p_business_id: number
+          p_first_name: string
+          p_last_name: string
+          p_user_email: string
+        }
         Returns: undefined
       }
       create_new_business: {

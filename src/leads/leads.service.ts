@@ -198,7 +198,7 @@ export class LeadsService {
       email: string | null;
       whatsappConversationId: string | null;
     },
-    stage: { id: number; business_id: number },
+    stage: Tables<'pipeline_stages'>,
   ): Promise<{ leadId: number; isNewLead: boolean; existingCount?: number; lead: any }> {
     const supabase = this.supabaseService.getClient();
 
@@ -250,6 +250,7 @@ export class LeadsService {
       value: 0,
       whatsapp_conversation_id: conversationInfo.whatsappConversationId,
       business_id: stage.business_id,
+      business_employee_id: stage.default_business_employee_id,
     };
 
     this.logger.log('Inserting new lead...', leadData);
