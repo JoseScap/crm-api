@@ -18,6 +18,7 @@ export class OutgoingWebhooksService {
       pipeline: Tables<'pipelines'>;
       previousStages: Tables<'pipeline_stages'>[];
       nextStages: Tables<'pipeline_stages'>[];
+      assignedBusinessEmployee: Tables<'business_employees'>;
     },
   ): Promise<void> {
     if (!stage.webhook_url) {
@@ -43,7 +44,7 @@ export class OutgoingWebhooksService {
           {
             phoneNumber: data.lead.phone_number,
             conversationId: data.lead.whatsapp_conversation_id,
-            limit: 10,
+            limit: 20,
           },
         );
 
@@ -97,6 +98,7 @@ export class OutgoingWebhooksService {
       pipeline: data.pipeline,
       previousStages: data.previousStages,
       nextStages: data.nextStages,
+      assignedBusinessEmployee: data.assignedBusinessEmployee,
       messages: messages,
     };
 

@@ -159,7 +159,7 @@ export type Database = {
       }
       pipeline_stage_leads: {
         Row: {
-          business_employee_id: number | null
+          business_employee_id: number
           business_id: number
           closed_at: string | null
           created_at: string
@@ -174,7 +174,7 @@ export type Database = {
           whatsapp_conversation_id: string | null
         }
         Insert: {
-          business_employee_id?: number | null
+          business_employee_id: number
           business_id: number
           closed_at?: string | null
           created_at?: string
@@ -189,7 +189,7 @@ export type Database = {
           whatsapp_conversation_id?: string | null
         }
         Update: {
-          business_employee_id?: number | null
+          business_employee_id?: number
           business_id?: number
           closed_at?: string | null
           created_at?: string

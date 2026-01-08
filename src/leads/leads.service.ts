@@ -61,11 +61,40 @@ export class LeadsService {
         };
       }
 
+      if (stage.is_input && !stage.default_business_employee_id) {
+        return {
+          status: 'error',
+          message: 'Input stage has no default business employee',
+          timestamp: new Date().toISOString(),
+        };
+      }
+
       // Get or create lead
       const { leadId, isNewLead, existingCount, lead } = await this.getOrCreateLead(
         conversationInfo,
         stage,
       );
+
+      // Get assigned business employee
+      const assignedBusinessEmployee = await this.findAssignedBusinessEmployee(
+        stage.default_business_employee_id,
+      );
+
+      if (!assignedBusinessEmployee) {
+        return {
+          status: 'error',
+          message: 'Assigned business employee not found',
+          timestamp: new Date().toISOString(),
+        };
+      }
+
+      if (!lead) {
+        return {
+          status: 'error',
+          message: 'Lead could not be retrieved or created',
+          timestamp: new Date().toISOString(),
+        };
+      }
 
       // Get related stages (previous and next)
       const { previousStages, nextStages } = await this.getRelatedStages(
@@ -81,6 +110,7 @@ export class LeadsService {
           pipeline,
           previousStages,
           nextStages,
+          assignedBusinessEmployee,
         })
         .catch((webhookError) => {
           this.logger.error(
@@ -191,6 +221,33 @@ export class LeadsService {
     return stage;
   }
 
+  private async findAssignedBusinessEmployee(employeeId: number | null) {
+    if (!employeeId) {
+      this.logger.log('No employee assigned to lead');
+      return null;
+    }
+
+    this.logger.log(`Finding assigned business employee with id: ${employeeId}...`);
+    const supabase = this.supabaseService.getClient();
+
+    const { data: employee, error: employeeError } = await supabase
+      .from('business_employees')
+      .select('*')
+      .eq('id', employeeId)
+      .single();
+
+    if (employeeError || !employee) {
+      this.logger.warn(
+        `Business employee not found for id: ${employeeId}`,
+        employeeError,
+      );
+      return null;
+    }
+
+    this.logger.log('Business employee found:', employee);
+    return employee;
+  }
+
   private async getOrCreateLead(
     conversationInfo: {
       customerName: string;
@@ -199,7 +256,12 @@ export class LeadsService {
       whatsappConversationId: string | null;
     },
     stage: Tables<'pipeline_stages'>,
-  ): Promise<{ leadId: number; isNewLead: boolean; existingCount?: number; lead: any }> {
+  ): Promise<{
+    leadId: number;
+    isNewLead: boolean;
+    existingCount: number;
+    lead: Tables<'pipeline_stage_leads'> | null;
+  }> {
     const supabase = this.supabaseService.getClient();
 
     if (!conversationInfo.phoneNumber) {
@@ -250,7 +312,7 @@ export class LeadsService {
       value: 0,
       whatsapp_conversation_id: conversationInfo.whatsappConversationId,
       business_id: stage.business_id,
-      business_employee_id: stage.default_business_employee_id,
+      business_employee_id: stage.default_business_employee_id as number,
     };
 
     this.logger.log('Inserting new lead...', leadData);
@@ -272,6 +334,7 @@ export class LeadsService {
     return {
       leadId: lead.id,
       isNewLead: true,
+      existingCount: 0,
       lead: lead,
     };
   }
