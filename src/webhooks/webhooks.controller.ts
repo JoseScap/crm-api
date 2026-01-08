@@ -34,8 +34,13 @@ export class WebhooksController {
     return this.incomingWebhooksService.bookMeeting(body);
   }
 
-  @Post('update-lead-information')
-  async updateLeadInformation(@Body() body: UpdateLeadInformationDto) {
+  @Post('update-lead-email')
+  async updateLeadEmail(@Body() body: UpdateLeadInformationDto) {
+    return this.incomingWebhooksService.updateLeadInformation(body);
+  }
+
+  @Post('update-lead-customer-name')
+  async updateLeadCustomerName(@Body() body: UpdateLeadInformationDto) {
     return this.incomingWebhooksService.updateLeadInformation(body);
   }
 }
