@@ -65,3 +65,15 @@ export interface BookMeetingResponse {
   meetingUrl?: string;
   error?: string;
 }
+
+export interface UpdateLeadInformationDto {
+  leadId: number;
+  email?: string;
+  customerName?: string;
+}
+
+export interface UpdateLeadInformationResponse {
+  status: 'success' | 'error';
+  message: string;
+  error?: string;
+}

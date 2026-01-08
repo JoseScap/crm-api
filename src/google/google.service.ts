@@ -245,7 +245,6 @@ export class GoogleService {
       duration: number;
       title: string;
       description?: string;
-      customerName: string;
       customerEmail: string | null;
     },
   ): Promise<{ meetingUrl?: string }> {
@@ -257,7 +256,7 @@ export class GoogleService {
         'https://www.googleapis.com/calendar/v3/calendars/primary/events',
         {
           summary: data.title,
-          description: data.description || `Meeting with ${data.customerName}`,
+          description: data.description || 'Meeting',
           start: {
             dateTime: startTime.toISOString(),
           },

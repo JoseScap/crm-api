@@ -12,6 +12,8 @@ import {
   CheckAvailabilityForMeetingResponse,
   BookMeetingDto,
   BookMeetingResponse,
+  UpdateLeadInformationDto,
+  UpdateLeadInformationResponse,
 } from './webhooks.types';
 import { Tables } from '../supabase/supabase.schema';
 
@@ -421,7 +423,6 @@ export class IncomingWebhooksService {
         duration: dto.duration,
         title: dto.title,
         description: dto.description,
-        customerName: lead.customer_name,
         customerEmail: lead.email,
       });
 
@@ -435,6 +436,70 @@ export class IncomingWebhooksService {
       return {
         status: 'error',
         message: 'Failed to book meeting',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  async updateLeadInformation(
+    dto: UpdateLeadInformationDto,
+  ): Promise<UpdateLeadInformationResponse> {
+    try {
+      this.logger.log(`Updating information for lead ${dto.leadId}`);
+
+      // 1. Verify lead exists
+      const { data: lead, error: leadError } = await this.supabaseService
+        .getClient()
+        .from('pipeline_stage_leads')
+        .select('id')
+        .eq('id', dto.leadId)
+        .single();
+
+      if (leadError || !lead) {
+        this.logger.warn(`Lead ${dto.leadId} not found`);
+        return { status: 'error', message: 'Lead not found' };
+      }
+
+      // 2. Prepare update data
+      const updateData: any = {};
+      if (dto.email) updateData.email = dto.email;
+      if (dto.customerName) updateData.customer_name = dto.customerName;
+
+      if (Object.keys(updateData).length === 0) {
+        return {
+          status: 'success',
+          message: 'No information provided to update',
+        };
+      }
+
+      // 3. Update the lead
+      const { error: updateError } = await this.supabaseService
+        .getClient()
+        .from('pipeline_stage_leads')
+        .update(updateData)
+        .eq('id', dto.leadId);
+
+      if (updateError) {
+        this.logger.error(
+          `Error updating information for lead ${dto.leadId}:`,
+          updateError,
+        );
+        return {
+          status: 'error',
+          message: 'Failed to update lead information',
+          error: updateError.message,
+        };
+      }
+
+      return {
+        status: 'success',
+        message: 'Lead information updated successfully',
+      };
+    } catch (error) {
+      this.logger.error('Error in updateLeadInformation:', error);
+      return {
+        status: 'error',
+        message: 'Failed to update lead information',
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }

@@ -5,6 +5,7 @@ import type {
   ChangeLeadStageDto,
   CheckAvailabilityForMeetingDto,
   BookMeetingDto,
+  UpdateLeadInformationDto,
 } from './webhooks.types';
 
 @Controller('webhooks')
@@ -31,6 +32,11 @@ export class WebhooksController {
   @Post('book-meeting')
   async bookMeeting(@Body() body: BookMeetingDto) {
     return this.incomingWebhooksService.bookMeeting(body);
+  }
+
+  @Post('update-lead-information')
+  async updateLeadInformation(@Body() body: UpdateLeadInformationDto) {
+    return this.incomingWebhooksService.updateLeadInformation(body);
   }
 }
 
