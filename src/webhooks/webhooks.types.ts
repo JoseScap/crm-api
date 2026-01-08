@@ -36,3 +36,32 @@ export interface ChangeLeadStageResponse {
   error?: string;
 }
 
+export interface CheckAvailabilityForMeetingDto {
+  leadId: number;
+  date: string;
+  duration: number;
+  timezone: string;
+  minWorkingHour: number;
+  maxWorkingHour: number;
+}
+
+export interface CheckAvailabilityForMeetingResponse {
+  isAvailable: boolean;
+  message: string;
+  suggestedSlots?: string[];
+}
+
+export interface BookMeetingDto {
+  leadId: number;
+  date: string;
+  duration: number;
+  title: string;
+  description?: string;
+}
+
+export interface BookMeetingResponse {
+  status: 'success' | 'error';
+  message: string;
+  meetingUrl?: string;
+  error?: string;
+}

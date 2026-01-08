@@ -1,13 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 import { SupabaseService } from '../supabase/supabase.service';
+import { GoogleService } from '../google/google.service';
 import {
   ReplyWhatsappMessageDto,
   ReplyWhatsappMessageResponse,
   LeadWithPipeline,
   ChangeLeadStageDto,
   ChangeLeadStageResponse,
+  CheckAvailabilityForMeetingDto,
+  CheckAvailabilityForMeetingResponse,
+  BookMeetingDto,
+  BookMeetingResponse,
 } from './webhooks.types';
+import { Tables } from '../supabase/supabase.schema';
 
 @Injectable()
 export class IncomingWebhooksService {
@@ -16,6 +22,7 @@ export class IncomingWebhooksService {
   constructor(
     private readonly whatsappService: WhatsappService,
     private readonly supabaseService: SupabaseService,
+    private readonly googleService: GoogleService,
   ) {}
 
   async replyWhatsappMessage(
@@ -288,6 +295,146 @@ export class IncomingWebhooksService {
       return {
         status: 'error',
         message: 'Failed to change lead stage',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  async checkAvailabilityForMeeting(
+    dto: CheckAvailabilityForMeetingDto,
+  ): Promise<CheckAvailabilityForMeetingResponse> {
+    try {
+      this.logger.log(
+        `Checking availability for lead ${dto.leadId} on ${dto.date} with duration ${dto.duration} mins`,
+      );
+
+      // 1. Find the lead
+      const { data: lead, error: leadError } = await this.supabaseService
+        .getClient()
+        .from('pipeline_stage_leads')
+        .select('business_employee_id, business_id')
+        .eq('id', dto.leadId)
+        .single();
+
+      if (leadError || !lead) {
+        this.logger.warn(`Lead ${dto.leadId} not found`);
+        return { isAvailable: false, message: 'Lead not found' };
+      }
+
+      // 2. Find the employee's OAuth connection
+      const { data: connection, error: connectionError } = await this.supabaseService
+        .getClient()
+        .from('business_employee_oauth_connections')
+        .select('*')
+        .eq('business_employee_id', lead.business_employee_id)
+        .eq('business_id', lead.business_id)
+        .single();
+
+      if (connectionError || !connection) {
+        this.logger.warn(
+          `OAuth connection not found for employee ${lead.business_employee_id}`,
+        );
+        return {
+          isAvailable: false,
+          message: 'Employee does not have a calendar connected',
+        };
+      }
+
+      // 3. Get valid access token
+      const accessToken = await this.googleService.getValidAccessToken(connection);
+      if (!accessToken) {
+        return {
+          isAvailable: false,
+          message: 'Failed to authenticate with Google Calendar',
+        };
+      }
+
+      // 4. Check availability using Google Service
+      return await this.googleService.checkAvailability(
+        accessToken,
+        dto.date,
+        dto.duration,
+        dto.timezone,
+        dto.minWorkingHour,
+        dto.maxWorkingHour,
+      );
+    } catch (error) {
+      this.logger.error('Error checking availability:', error);
+      return {
+        isAvailable: false,
+        message: 'Error checking availability',
+      };
+    }
+  }
+
+  async bookMeeting(dto: BookMeetingDto): Promise<BookMeetingResponse> {
+    try {
+      this.logger.log(
+        `Booking meeting for lead ${dto.leadId} on ${dto.date} with duration ${dto.duration} mins`,
+      );
+
+      // 1. Find the lead
+      const { data: lead, error: leadError } = await this.supabaseService
+        .getClient()
+        .from('pipeline_stage_leads')
+        .select('business_employee_id, business_id, customer_name, email')
+        .eq('id', dto.leadId)
+        .single();
+
+      if (leadError || !lead) {
+        this.logger.warn(`Lead ${dto.leadId} not found`);
+        return { status: 'error', message: 'Lead not found' };
+      }
+
+      // 2. Find the employee's OAuth connection
+      const { data: connection, error: connectionError } = await this.supabaseService
+        .getClient()
+        .from('business_employee_oauth_connections')
+        .select('*')
+        .eq('business_employee_id', lead.business_employee_id)
+        .eq('business_id', lead.business_id)
+        .single();
+
+      if (connectionError || !connection) {
+        this.logger.warn(
+          `OAuth connection not found for employee ${lead.business_employee_id}`,
+        );
+        return {
+          status: 'error',
+          message: 'Employee does not have a calendar connected',
+        };
+      }
+
+      // 3. Get valid access token
+      const accessToken = await this.googleService.getValidAccessToken(connection);
+      if (!accessToken) {
+        return {
+          status: 'error',
+          message: 'Failed to authenticate with Google Calendar',
+        };
+      }
+
+      // 4. Create meeting using Google Service
+      const result = await this.googleService.bookMeeting(accessToken, {
+        leadId: dto.leadId,
+        date: dto.date,
+        duration: dto.duration,
+        title: dto.title,
+        description: dto.description,
+        customerName: lead.customer_name,
+        customerEmail: lead.email,
+      });
+
+      return {
+        status: 'success',
+        message: 'Meeting booked successfully',
+        meetingUrl: result.meetingUrl,
+      };
+    } catch (error) {
+      this.logger.error('Error booking meeting:', error);
+      return {
+        status: 'error',
+        message: 'Failed to book meeting',
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }

@@ -1,0 +1,12 @@
+### Check Availability for Meeting
+POST http://localhost:3000/webhooks/check-availability
+Content-Type: application/json
+
+{
+    "leadId": 18,
+    "date": "2026-01-08T13:00:00Z",
+    "duration": 30,
+    "timezone": "America/Argentina/Buenos_Aires",
+    "minWorkingHour": 9,
+    "maxWorkingHour": 18
+}

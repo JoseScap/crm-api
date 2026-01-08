@@ -6,6 +6,7 @@ import { SupabaseModule } from './supabase/supabase.module';
 import { LeadsModule } from './leads/leads.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { GoogleModule } from './google/google.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     LeadsModule,
     WhatsappModule,
     WebhooksModule,
+    GoogleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
