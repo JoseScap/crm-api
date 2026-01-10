@@ -44,7 +44,7 @@ export class OutgoingWebhooksService {
           {
             phoneNumber: data.lead.phone_number,
             conversationId: data.lead.whatsapp_conversation_id,
-            limit: 20,
+            limit: 10,
           },
         );
 
