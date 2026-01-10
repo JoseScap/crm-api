@@ -277,6 +277,7 @@ export class GoogleService {
           },
           params: {
             conferenceDataVersion: 1,
+            sendUpdates: 'all',
           },
         },
       );
